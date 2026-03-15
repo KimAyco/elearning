@@ -1,0 +1,51 @@
+# Dependencies
+/node_modules
+/vendor
+
+# Environment & secrets (never commit)
+.env
+.env.backup
+.env.production
+.env.local
+.env.*.local
+.env.sqlite-backup-*
+!.env.example
+
+# Build & cache
+/public/build
+/public/hot
+/public/storage
+*.log
+.phpunit.result.cache
+/.phpunit.cache
+
+# IDE & editor
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
+.phpactor.json
+
+# Auth / keys
+/auth.json
+/storage/*.key
+/storage/pail
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp / backup
+.tmp_*
+*.tmp
+*.bak
+*.swp
+*~
+
+# Local config
+Homestead.json
+Homestead.yaml
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
