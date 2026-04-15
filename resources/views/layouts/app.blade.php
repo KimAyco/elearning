@@ -5,11 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'EduPlatform')</title>
+    <link rel="icon" href="/images/icon.png?v=20260410" sizes="any">
+    <link rel="icon" type="image/png" href="/images/icon.png?v=20260410">
+    <link rel="shortcut icon" href="/images/icon.png?v=20260410">
+    <link rel="apple-touch-icon" href="/images/icon.png?v=20260410">
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&family=plus-jakarta-sans:600,700" rel="stylesheet">
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700" rel="stylesheet">
     <style>
         /* ─── Design Tokens ─────────────────────────────────────────── */
         :root {
+            --font-sans:   'Inter', system-ui, -apple-system, sans-serif;
             --bg:          #f4f7fe;
             --bg-2:        #edf1fb;
             --surface:     #ffffff;
@@ -52,7 +57,7 @@
         html { scroll-behavior: smooth; }
 
         body {
-            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            font-family: var(--font-sans);
             font-size: 14px;
             line-height: 1.6;
             color: var(--ink);
@@ -69,7 +74,7 @@
 
         /* ─── Typography ────────────────────────────────────────────── */
         h1, h2, h3, h4 {
-            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+            font-family: var(--font-sans);
             color: var(--ink);
             line-height: 1.3;
         }
@@ -102,11 +107,29 @@
         }
 
         .sidebar-brand {
-            padding: 20px 18px 16px;
+            padding: 18px 16px 14px;
             border-bottom: 1px solid var(--border);
             display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .sidebar-brand-logo-wrap {
+            width: 44px;
+            height: 44px;
+            flex-shrink: 0;
+            display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: center;
+            border-radius: var(--radius);
+            background: var(--surface-2);
+        }
+
+        .sidebar-brand-logo {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            display: block;
         }
 
         .sidebar-brand-icon {
@@ -119,8 +142,30 @@
 
         .sidebar-brand-icon svg { color: #fff; }
 
+        .sidebar-brand-text-block {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .sidebar-brand-primary {
+            font-family: var(--font-sans);
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--ink);
+            line-height: 1.25;
+            word-wrap: break-word;
+        }
+
+        .sidebar-brand-platform {
+            font-size: 0.65rem;
+            color: var(--muted);
+            font-weight: 500;
+            margin-top: 2px;
+            letter-spacing: 0.02em;
+        }
+
         .sidebar-brand-text {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: var(--font-sans);
             font-size: 0.95rem;
             font-weight: 700;
             color: var(--ink);
@@ -252,7 +297,6 @@
 
         .sidebar-submenu-toggle:hover svg { opacity: 1; }
 
-        .sidebar-submenu-toggle.open,
         .sidebar-submenu-toggle.has-active {
             color: var(--accent);
         }
@@ -335,6 +379,10 @@
         .sidebar-footer {
             padding: 12px 10px;
             border-top: 1px solid var(--border);
+        }
+
+        .sidebar-logout-form {
+            margin-top: 10px;
         }
 
         /* ─── Main Content ──────────────────────────────────────────── */
@@ -656,6 +704,113 @@
         }
         .btn.success:hover { background: #15803d; box-shadow: 0 4px 14px rgba(22,163,74,.4); }
 
+        /* GCash-style: white button, blue label (payment CTAs) */
+        .btn.gcash {
+            background: #fff;
+            color: #007cff;
+            border: 2px solid #007cff;
+            box-shadow: 0 2px 8px rgba(0, 124, 255, 0.12);
+        }
+
+        /* ─── Global confirm + toast (Moodle-style) ─────────────────── */
+        .cashier-toast {
+            position: fixed;
+            top: 18px;
+            left: 50%;
+            transform: translate(-50%, -14px);
+            min-width: 280px;
+            max-width: min(92vw, 480px);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(34, 197, 94, 0.26);
+            background: rgba(240, 253, 244, 0.98);
+            color: #166534;
+            box-shadow: 0 14px 34px rgba(15, 23, 42, 0.14);
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .24s ease, transform .24s ease;
+        }
+
+        .cashier-toast svg {
+            width: 18px;
+            height: 18px;
+            flex: 0 0 auto;
+        }
+
+        .cashier-toast-close {
+            margin-left: auto;
+            border: 0;
+            background: transparent;
+            color: inherit;
+            font-size: 1.1rem;
+            line-height: 1;
+            cursor: pointer;
+            opacity: 0.78;
+        }
+
+        .cashier-toast[data-open="1"] {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate(-50%, 0);
+        }
+
+        /* [hidden] must win over display:flex — otherwise the dialog stays visible on load */
+        .cashier-confirm-overlay[hidden] {
+            display: none !important;
+        }
+
+        .cashier-confirm-overlay:not([hidden]) {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cashier-confirm-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.42);
+            z-index: 10000;
+            padding: 16px;
+        }
+
+        .cashier-confirm-dialog {
+            width: min(92vw, 430px);
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.3);
+            padding: 18px 18px 14px;
+        }
+
+        .cashier-confirm-dialog h3 {
+            margin: 0;
+            font-size: 1.02rem;
+            color: #0f172a;
+        }
+
+        .cashier-confirm-dialog p {
+            margin: 10px 0 0;
+            color: #475569;
+            font-size: 0.92rem;
+        }
+
+        .cashier-confirm-actions {
+            margin-top: 16px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+        .btn.gcash:hover {
+            background: #f0f8ff;
+            color: #0060d4;
+            border-color: #0060d4;
+            box-shadow: 0 4px 14px rgba(0, 124, 255, 0.22);
+        }
+
         .btn.danger {
             background: var(--red);
             color: #fff;
@@ -800,7 +955,7 @@
         .auth-brand-icon svg { color: #fff; }
 
         .auth-brand-name {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: var(--font-sans);
             font-size: 1.1rem;
             font-weight: 700;
             color: var(--ink);
@@ -1070,31 +1225,338 @@
         @media (max-width: 768px) {
             .hamburger { display: flex; align-items: center; }
         }
+
+        /* ─── LMS-style global loader (branding + page / navigation) ─────────── */
+        .global-page-loader {
+            position: fixed;
+            inset: 0;
+            z-index: 10050;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: linear-gradient(168deg, #c5d4c9 0%, #b8cbc0 38%, #cddfd2 100%);
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .global-page-loader.global-page-loader--hidden {
+            pointer-events: none;
+            visibility: hidden;
+            opacity: 0;
+        }
+
+        .global-page-loader__inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .global-page-loader__logo-wrap {
+            position: relative;
+            width: 108px;
+            height: 108px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .global-page-loader__logo-wrap::before {
+            content: '';
+            position: absolute;
+            inset: -6px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: rgba(21, 128, 61, 0.55);
+            border-right-color: rgba(21, 128, 61, 0.2);
+            animation: global-page-loader-orbit 1.25s linear infinite;
+        }
+
+        .global-page-loader__logo {
+            width: 88px;
+            height: 88px;
+            object-fit: contain;
+            position: relative;
+            z-index: 1;
+            filter: drop-shadow(0 8px 22px rgba(15, 31, 61, 0.14));
+            animation: global-page-loader-pulse 2.2s ease-in-out infinite;
+        }
+
+        @keyframes global-page-loader-orbit {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes global-page-loader-pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.04); opacity: 0.95; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .global-page-loader__logo-wrap::before,
+            .global-page-loader__logo {
+                animation: none !important;
+            }
+        }
+
+        /* Nehemiah / super admin — dedicated loader (logoon.png) */
+        .global-page-loader--nehemiah {
+            background: radial-gradient(ellipse 100% 80% at 50% 20%, #1a2740 0%, #0a0f18 55%, #050810 100%);
+        }
+
+        /* Square hit area + logo centered; ring is a true circle (not a rounded rect) */
+        .global-page-loader--nehemiah .global-page-loader__logo-wrap {
+            width: 148px;
+            height: 148px;
+            min-height: unset;
+            padding: 14px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .global-page-loader--nehemiah .global-page-loader__logo-wrap::before {
+            border-radius: 50%;
+            inset: -7px;
+            border: 2px solid transparent;
+            border-top-color: rgba(197, 90, 46, 0.92);
+            border-right-color: rgba(232, 160, 92, 0.42);
+            border-bottom-color: rgba(197, 90, 46, 0.12);
+            border-left-color: rgba(26, 39, 64, 0.35);
+        }
+
+        .global-page-loader--nehemiah .global-page-loader__logo {
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.4));
+        }
+
+        .global-page-loader__nehemiah-caption {
+            display: block;
+            margin-top: 22px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(232, 160, 92, 0.85);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .global-page-loader--nehemiah .global-page-loader__logo-wrap::before,
+            .global-page-loader--nehemiah .global-page-loader__logo {
+                animation: none !important;
+            }
+        }
     </style>
     @stack('styles')
     @stack('head')
 </head>
 <body>
+@php
+    $isSuperAdminRoute = request()->is('superadmin*');
+@endphp
+{{-- Logo + gradient only; submit uses bubble phase so logout confirm runs before loader. Nehemiah super admin uses logoon.png. --}}
+<div id="global-page-loader" class="global-page-loader @if($isSuperAdminRoute) global-page-loader--nehemiah @endif" role="status" aria-live="polite" aria-busy="true">
+    <div class="global-page-loader__inner">
+        <div class="global-page-loader__logo-wrap">
+            @if($isSuperAdminRoute)
+                <img
+                    src="{{ asset('images/logoon.png') }}"
+                    alt=""
+                    class="global-page-loader__logo"
+                    width="120"
+                    height="120"
+                    decoding="async"
+                    fetchpriority="high"
+                >
+            @else
+                <img
+                    src="{{ asset('storage/schools/1/edu_logo.png') }}"
+                    alt=""
+                    class="global-page-loader__logo"
+                    width="88"
+                    height="88"
+                    decoding="async"
+                    fetchpriority="high"
+                >
+            @endif
+        </div>
+        @if($isSuperAdminRoute)
+            <span class="global-page-loader__nehemiah-caption">Loading control center…</span>
+        @endif
+    </div>
+</div>
 @yield('content')
 
+@php
+    $roleCodesLayout = collect((array) (request()->attributes->get('role_codes') ?? session('role_codes', [])))
+        ->map(fn ($r) => strtolower((string) $r))
+        ->filter()
+        ->values()
+        ->all();
+    $isStudentRoleLayout = in_array('student', $roleCodesLayout, true);
+    $isStudentLayoutRoute =
+        request()->is('tenant/dashboard') ||
+        request()->is('tenant/enrollments') ||
+        request()->is('tenant/class') ||
+        request()->is('tenant/classes') ||
+        request()->is('tenant/grades') ||
+        request()->is('tenant/payments');
+
+    // Reuse the same footer on LMS class pages as well (teachers + students),
+    // since the footer styling is already tied to `admin_appearance` via the partial.
+    $isLmsClassRoute =
+        request()->is('tenant/lms/classes/*/*') ||
+        request()->is('tenant/classes/*/*');
+@endphp
+@if(($isStudentLayoutRoute && $isStudentRoleLayout) || $isLmsClassRoute)
+    @include('tenant.partials.student-footer')
+@endif
+
+{{-- Global confirm dialog, reusing cashier modal styles --}}
+<div id="global-confirm-overlay" class="cashier-confirm-overlay" hidden>
+    <div class="cashier-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="global-confirm-title" aria-describedby="global-confirm-text">
+        <h3 id="global-confirm-title">Confirm action</h3>
+        <p id="global-confirm-text">Are you sure you want to continue?</p>
+        <div class="cashier-confirm-actions">
+            <button type="button" id="global-confirm-cancel" class="btn ghost">Cancel</button>
+            <button type="button" id="global-confirm-ok" class="btn primary">Continue</button>
+        </div>
+    </div>
+</div>
+
+@if(session('status'))
+    <div
+        id="global-toast"
+        class="cashier-toast cashier-toast--success"
+        role="status"
+        aria-live="polite"
+        data-open="1"
+    >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        <span>{{ session('status') }}</span>
+        <button type="button" class="cashier-toast-close" aria-label="Close notification">&times;</button>
+    </div>
+@endif
+
 <script>
-    // Password visibility toggle
+    (function () {
+        const el = document.getElementById('global-page-loader');
+        if (!el) return;
+
+        let fallbackTimer;
+
+        const hide = () => {
+            if (fallbackTimer) {
+                clearTimeout(fallbackTimer);
+                fallbackTimer = undefined;
+            }
+            el.classList.add('global-page-loader--hidden');
+            el.setAttribute('aria-busy', 'false');
+            el.setAttribute('aria-hidden', 'true');
+        };
+
+        const show = () => {
+            if (fallbackTimer) {
+                clearTimeout(fallbackTimer);
+                fallbackTimer = undefined;
+            }
+            el.classList.remove('global-page-loader--hidden');
+            el.setAttribute('aria-busy', 'true');
+            el.setAttribute('aria-hidden', 'false');
+        };
+
+        window.hideGlobalPageLoader = hide;
+        window.showGlobalPageLoader = show;
+
+        const scheduleInitialHide = () => {
+            requestAnimationFrame(() => {
+                setTimeout(hide, 45);
+            });
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', scheduleInitialHide, { once: true });
+        } else {
+            scheduleInitialHide();
+        }
+
+        fallbackTimer = setTimeout(hide, 15000);
+
+        window.addEventListener('pageshow', (e) => {
+            if (e.persisted) hide();
+        });
+
+        document.addEventListener('click', (e) => {
+            const a = e.target.closest('a[href]');
+            if (!a || e.defaultPrevented) return;
+            if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+            if (a.closest('[data-no-loader]')) return;
+            // If the click happened on (or inside) an element explicitly marked to not show the loader,
+            // skip showing the global navigation loader.
+            if (e.target && e.target.closest && e.target.closest('[data-no-loader]')) return;
+            const href = a.getAttribute('href');
+            if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+            if (a.getAttribute('target') === '_blank' || a.hasAttribute('download')) return;
+            let url;
+            try {
+                url = new URL(href, window.location.href);
+            } catch {
+                return;
+            }
+            if (url.origin !== window.location.origin) return;
+            if (url.pathname === window.location.pathname && url.search === window.location.search && url.hash !== window.location.hash) {
+                return;
+            }
+            show();
+        }, true);
+
+        // Bubble phase: runs after the target (e.g. sidebar logout) so preventDefault() is visible — avoids covering the confirm dialog and stuck loader on cancel
+        document.addEventListener('submit', (e) => {
+            if (e.defaultPrevented) return;
+            const form = e.target;
+            if (!form || form.tagName !== 'FORM' || form.hasAttribute('data-no-loader')) return;
+            if (form.getAttribute('target') === '_blank') return;
+            const action = form.getAttribute('action') || '';
+            try {
+                const url = new URL(action || window.location.href, window.location.href);
+                if (url.origin !== window.location.origin) return;
+            } catch {
+                return;
+            }
+            show();
+        }, false);
+    })();
+
+    // Password visibility toggle (supports .input-wrap and super admin .superadmin-input-shell)
     document.querySelectorAll('.input-toggle').forEach(btn => {
         btn.addEventListener('click', () => {
-            const input = btn.closest('.input-wrap').querySelector('input');
+            const wrap = btn.closest('.input-wrap, .superadmin-input-shell');
+            if (!wrap) return;
+            const input = wrap.querySelector('input:not([type="hidden"])');
+            if (!input) return;
             const isText = input.type === 'text';
             input.type = isText ? 'password' : 'text';
-            btn.querySelector('.eye-open').style.display  = isText ? 'block' : 'none';
-            btn.querySelector('.eye-close').style.display = isText ? 'none'  : 'block';
+            const open = btn.querySelector('.eye-open');
+            const close = btn.querySelector('.eye-close');
+            if (open) open.style.display = isText ? 'block' : 'none';
+            if (close) close.style.display = isText ? 'none' : 'block';
         });
     });
 
-    // Tabs
-    document.querySelectorAll('.tab-btn').forEach(btn => {
+    // Tabs (works with both .tab-btn and .enroll-tab-btn)
+    document.querySelectorAll('.tab-btn, .enroll-tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const group = btn.closest('[data-tabs]');
             const target = btn.dataset.tab;
-            group.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            group.querySelectorAll('.tab-btn, .enroll-tab-btn').forEach(b => b.classList.remove('active'));
             group.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
             btn.classList.add('active');
             group.querySelector('[data-panel="' + target + '"]').classList.add('active');
@@ -1132,6 +1594,77 @@
             setTimeout(() => el.remove(), 500);
         });
     }, 6000);
+
+    // Global toast (login/logout and other status messages)
+    (function () {
+        const toast = document.getElementById('global-toast');
+        if (toast) {
+            const closeBtn = toast.querySelector('.cashier-toast-close');
+            const closeToast = () => {
+                toast.dataset.open = '0';
+            };
+            if (closeBtn) closeBtn.addEventListener('click', closeToast);
+            window.setTimeout(closeToast, 3600);
+        }
+    })();
+
+    // Global confirm dialog used for sidebar logout (and future confirms)
+    (function () {
+        const overlay = document.getElementById('global-confirm-overlay');
+        const titleEl = document.getElementById('global-confirm-title');
+        const textEl = document.getElementById('global-confirm-text');
+        const cancelBtn = document.getElementById('global-confirm-cancel');
+        const okBtn = document.getElementById('global-confirm-ok');
+
+        const showConfirm = ({ title, message, okLabel }) => {
+            if (!overlay || !cancelBtn || !okBtn) return Promise.resolve(true);
+            return new Promise((resolve) => {
+                const close = (accepted) => {
+                    overlay.hidden = true;
+                    cancelBtn.removeEventListener('click', onCancel);
+                    okBtn.removeEventListener('click', onOk);
+                    overlay.removeEventListener('click', onBackdrop);
+                    document.removeEventListener('keydown', onEsc);
+                    resolve(accepted);
+                };
+                const onCancel = () => close(false);
+                const onOk = () => close(true);
+                const onBackdrop = (e) => {
+                    if (e.target === overlay) close(false);
+                };
+                const onEsc = (e) => {
+                    if (e.key === 'Escape') close(false);
+                };
+
+                if (titleEl) titleEl.textContent = title;
+                if (textEl) textEl.textContent = message;
+                okBtn.textContent = okLabel;
+                overlay.hidden = false;
+                cancelBtn.addEventListener('click', onCancel);
+                okBtn.addEventListener('click', onOk);
+                overlay.addEventListener('click', onBackdrop);
+                document.addEventListener('keydown', onEsc);
+                okBtn.focus();
+            });
+        };
+
+        document.querySelectorAll('.sidebar-logout-form').forEach((form) => {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const ok = await showConfirm({
+                    title: 'Sign out',
+                    message: 'Are you sure you want to sign out from this school portal?',
+                    okLabel: 'Sign out',
+                });
+                if (ok) {
+                    if (typeof window.showGlobalPageLoader === 'function') {
+                        window.showGlobalPageLoader();
+                    }
+                    form.submit();
+                }
+            });
+        });
+    })();
 </script>
 @stack('scripts')
 </body>

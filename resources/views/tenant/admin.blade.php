@@ -3,28 +3,14 @@
 <?php $__env->startSection('title', 'Admin Tools - School Portal'); ?>
 
 <?php $__env->startSection('content'); ?>
-<div class="app-shell">
-    <?php echo $__env->make('tenant.partials.sidebar', ['active' => 'admin'], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+<?php echo $__env->make('tenant.partials.tenant-mock-ui', [], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+<div class="app-shell tenant-ui-mock">
+    <?php echo $__env->make('tenant.partials.sidebar', ['active' => 'admin', 'sidebarClass' => 'sidebar--edu-mock'], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
     <div class="main-content">
-        <header class="topbar">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <button class="hamburger" aria-label="Toggle menu">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-                    </svg>
-                </button>
-                <span class="topbar-title">Admin Tools</span>
-            </div>
-            <div class="topbar-right">
-                <div class="topbar-user">
-                    <div class="avatar"><?php echo e(strtoupper(substr(auth()->user()->full_name ?? 'U', 0, 1))); ?></div>
-                    <span><?php echo e(auth()->user()->full_name ?? 'User'); ?></span>
-                </div>
-            </div>
-        </header>
+        <?php echo $__env->make('tenant.partials.mock-topbar', [], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
-        <main class="page-body">
+        <main class="page-body admin-dashboard">
             <div class="page-header">
                 <div class="breadcrumb">
                     <a href="<?php echo e(url('/tenant/dashboard')); ?>">Dashboard</a>
@@ -155,6 +141,57 @@
                                                         <div class="program-plan-head">
                                                             <h3 class="program-plan-title">Program Curriculum: <?php echo e($p->code); ?> - <?php echo e($p->name); ?></h3>
                                                             <button type="button" class="btn sm ghost program-plan-close" data-close-target="<?php echo e($programPanelId); ?>">Close</button>
+                                                        <div class="inline" style="margin-top: 10px; display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+                                                            <form method="post" action="<?php echo e(url('/tenant/admin/program-prospectuses')); ?>" class="stack" style="margin:0;">
+                                                                <?php echo csrf_field(); ?>
+                                                                <input type="hidden" name="program_id" value="<?php echo e($p->id); ?>">
+                                                                <input
+                                                                    name="prospectus_name"
+                                                                    required
+                                                                    placeholder="Prospectus title (e.g. 2026-2027)"
+                                                                    style="min-width: 260px;"
+                                                                >
+                                                                <button type="submit" class="btn success sm" onclick="return confirm('Save this current curriculum as a prospectus snapshot?')">
+                                                                    Save Prospectus
+                                                                </button>
+                                                            </form>
+                                                            <form method="post" action="<?php echo e(url('/tenant/admin/programs/' . $p->id . '/curriculum-reset')); ?>" style="margin:0;">
+                                                                <?php echo csrf_field(); ?>
+                                                                <button
+                                                                    type="submit"
+                                                                    class="btn danger sm"
+                                                                    onclick="return confirm('Start a new working curriculum? This will clear the current planned subjects for this program.');"
+                                                                >
+                                                                    New Curriculum (Blank)
+                                                                </button>
+                                                            </form>
+                                                            <?php $prospectusesForProgram = ($programProspectusesByProgramId[$p->id] ?? null); ?>
+                                                            <?php if($prospectusesForProgram && $prospectusesForProgram->count()): ?>
+                                                                <form
+                                                                    method="post"
+                                                                    action="<?php echo e(url('/tenant/admin/program-prospectuses/load')); ?>"
+                                                                    style="margin:0;"
+                                                                >
+                                                                    <?php echo csrf_field(); ?>
+                                                                    <select name="program_prospectus_id" required style="min-width: 260px;">
+                                                                        <?php $__currentLoopData = $prospectusesForProgram; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $prospectus): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                                            <option value="<?php echo e($prospectus->id); ?>">
+                                                                                <?php echo e($prospectus->name); ?> (<?php echo e($prospectus->status); ?>)
+                                                                            </option>
+                                                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                                                    </select>
+                                                                    <button
+                                                                        type="submit"
+                                                                        class="btn primary sm"
+                                                                        onclick="return confirm('Load this saved prospectus into the current working curriculum?');"
+                                                                    >
+                                                                        Load Prospectus
+                                                                    </button>
+                                                                </form>
+                                                            <?php else: ?>
+                                                                <span class="text-muted" style="font-size:0.85rem;">No saved prospectus yet.</span>
+                                                            <?php endif; ?>
+                                                        </div>
                                                         </div>
                                                         <form method="post" action="<?php echo e(url('/tenant/admin/curriculum-items')); ?>" class="stack program-plan-add-form">
                                                             <?php echo csrf_field(); ?>
@@ -224,13 +261,22 @@
                                                                         <table>
                                                                             <thead>
                                                                                 <tr>
-                                                                                    <th>Semester</th>
-                                                                                    <th>Subject</th>
+                                                                                    <th>Course Code</th>
+                                                                                    <th>Course Title</th>
+                                                                                    <th>LEC</th>
+                                                                                    <th>LAB</th>
+                                                                                    <th>Units</th>
+                                                                                    <th>Pre-Req</th>
                                                                                     <th>Action</th>
                                                                                 </tr>
                                                                             </thead>
                                                                             <tbody>
-                                                                                <?php $previousSemesterLabel = null; ?>
+                                                                                <?php
+                                                                                    $previousSemesterLabel = null;
+                                                                                    $semesterLecTotal = 0.0;
+                                                                                    $semesterLabTotal = 0.0;
+                                                                                    $semesterUnitsTotal = 0.0;
+                                                                                ?>
                                                                                 <?php foreach($yearItems as $item): ?>
                                                                                     <?php
                                                                                         $semesterLabel = (($item->semester->term_code ?? null) === '1ST')
@@ -238,22 +284,63 @@
                                                                                             : ((($item->semester->term_code ?? null) === '2ND')
                                                                                                 ? 'Second Semester'
                                                                                                 : ($item->semester->name ?? 'N/A'));
+
+                                                                                        $lec = (float) ($item->subject->weekly_hours ?? 0);
+                                                                                        $lab = 0.0; // Subject model currently stores only weekly_hours; LAB will be 0 unless you add lab fields.
+                                                                                        $units = (float) ($item->subject->units ?? 0);
+                                                                                        $prereqCodes = $item->subject->prerequisites->pluck('code')->filter()->values()->all();
                                                                                     ?>
+
                                                                                     <?php if($previousSemesterLabel !== null && $previousSemesterLabel !== $semesterLabel): ?>
+                                                                                        <tr class="semester-total-row">
+                                                                                            <td colspan="7" style="font-weight:800; color:#0f172a;">
+                                                                                                Total for <?php echo e($previousSemesterLabel); ?>: LEC <?php echo e(number_format($semesterLecTotal, 1)); ?>
+                                                                                                · LAB <?php echo e(number_format($semesterLabTotal, 1)); ?>
+                                                                                                · Units <?php echo e(number_format($semesterUnitsTotal, 1)); ?>
+                                                                                            </td>
+                                                                                        </tr>
+
                                                                                         <tr class="semester-separator-row">
-                                                                                            <td colspan="3">
+                                                                                            <td colspan="7">
+                                                                                                <div class="semester-separator">
+                                                                                                    <span><?php echo e($semesterLabel); ?></span>
+                                                                                                </div>
+                                                                                            </td>
+                                                                                        </tr>
+
+                                                                                        <?php
+                                                                                            $semesterLecTotal = 0.0;
+                                                                                            $semesterLabTotal = 0.0;
+                                                                                            $semesterUnitsTotal = 0.0;
+                                                                                        ?>
+                                                                                    <?php endif; ?>
+
+                                                                                    <?php if($previousSemesterLabel === null): ?>
+                                                                                        <tr class="semester-separator-row">
+                                                                                            <td colspan="7">
                                                                                                 <div class="semester-separator">
                                                                                                     <span><?php echo e($semesterLabel); ?></span>
                                                                                                 </div>
                                                                                             </td>
                                                                                         </tr>
                                                                                     <?php endif; ?>
+
+                                                                                    <?php
+                                                                                        $semesterLecTotal += $lec;
+                                                                                        $semesterLabTotal += $lab;
+                                                                                        $semesterUnitsTotal += $units;
+                                                                                    ?>
+
                                                                                     <tr data-existing-item-id="<?php echo e($item->id); ?>">
-                                                                                        <td><?php echo e($semesterLabel); ?></td>
                                                                                         <td>
                                                                                             <span class="badge blue"><?php echo e($item->subject->code ?? 'N/A'); ?></span>
-                                                                                            <?php echo e($item->subject->title ?? 'N/A'); ?>
-
+                                                                                        </td>
+                                                                                        <td><?php echo e($item->subject->title ?? 'N/A'); ?></td>
+                                                                                        <td><?php echo e($lec > 0 ? number_format($lec, 1) : '0'); ?></td>
+                                                                                        <td><?php echo e($lab > 0 ? number_format($lab, 1) : '0'); ?></td>
+                                                                                        <td><?php echo e($units > 0 ? number_format($units, 1) : '0'); ?></td>
+                                                                                        <td>
+                                                                                            <?php echo e(count($prereqCodes) ? implode(', ', $prereqCodes) : 'None'); ?>
                                                                                         </td>
                                                                                         <td>
                                                                                             <form method="post" action="<?php echo e(url('/tenant/admin/curriculum-items/' . $item->id . '/remove')); ?>" class="program-plan-remove-form" data-item-id="<?php echo e($item->id); ?>">
@@ -264,6 +351,16 @@
                                                                                     </tr>
                                                                                     <?php ($previousSemesterLabel = $semesterLabel); ?>
                                                                                 <?php endforeach; ?>
+
+                                                                                <?php if($previousSemesterLabel !== null): ?>
+                                                                                    <tr class="semester-total-row">
+                                                                                        <td colspan="7" style="font-weight:800; color:#0f172a;">
+                                                                                            Total for <?php echo e($previousSemesterLabel); ?>: LEC <?php echo e(number_format($semesterLecTotal, 1)); ?>
+                                                                                            · LAB <?php echo e(number_format($semesterLabTotal, 1)); ?>
+                                                                                            · Units <?php echo e(number_format($semesterUnitsTotal, 1)); ?>
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                <?php endif; ?>
                                                                             </tbody>
                                                                         </table>
                                                                     </div>
@@ -3007,6 +3104,195 @@ body.program-modal-open {
 
     .class-session-table {
         min-width: 980px;
+    }
+}
+
+/* ─── Admin dashboard: spacing polish (scoped, Moodle-like rhythm) ─── */
+.tenant-ui-mock .page-body.admin-dashboard {
+    padding: 24px 24px 48px;
+}
+
+@media (max-width: 900px) {
+    .tenant-ui-mock .page-body.admin-dashboard {
+        padding: 20px 16px 40px;
+    }
+}
+
+.tenant-ui-mock .admin-dashboard {
+    --admin-space-xs: 8px;
+    --admin-space-sm: 12px;
+    --admin-space-md: 16px;
+    --admin-space-lg: 24px;
+    --admin-space-xl: 28px;
+    --admin-section-gap: 24px;
+    --admin-card-radius: 12px;
+}
+
+.tenant-ui-mock .admin-dashboard .page-header {
+    margin-bottom: var(--admin-space-lg);
+    padding-bottom: var(--admin-space-md);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.95);
+}
+
+.tenant-ui-mock .admin-dashboard .page-header h1 {
+    margin: 0 0 var(--admin-space-xs);
+    letter-spacing: -0.02em;
+}
+
+.tenant-ui-mock .admin-dashboard .page-header p {
+    margin: 0;
+    max-width: 62ch;
+    line-height: 1.55;
+}
+
+.tenant-ui-mock .admin-dashboard .alert {
+    margin-bottom: var(--admin-space-md);
+}
+
+.tenant-ui-mock .admin-dashboard [data-tabs="admin-tabs"] {
+    display: flex;
+    flex-direction: column;
+    gap: var(--admin-space-lg);
+}
+
+.tenant-ui-mock .admin-dashboard .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: var(--admin-space-sm);
+    margin: 0;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--admin-card-radius);
+    background: #f8fafc;
+}
+
+.tenant-ui-mock .admin-dashboard .tab-btn {
+    margin-bottom: 0;
+    border-bottom: none;
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: #64748b;
+}
+
+.tenant-ui-mock .admin-dashboard .tab-btn:hover {
+    color: #0f172a;
+    background: rgba(255, 255, 255, 0.88);
+}
+
+.tenant-ui-mock .admin-dashboard .tab-btn.active {
+    color: var(--accent);
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+.tenant-ui-mock .admin-dashboard .tab-btn svg {
+    flex-shrink: 0;
+}
+
+.tenant-ui-mock .admin-dashboard .tab-panel.active {
+    display: flex;
+    flex-direction: column;
+    gap: var(--admin-section-gap);
+}
+
+.tenant-ui-mock .admin-dashboard .grid {
+    gap: var(--admin-space-lg);
+}
+
+.tenant-ui-mock .admin-dashboard .mb-20 {
+    margin-bottom: var(--admin-space-xl) !important;
+}
+
+.tenant-ui-mock .admin-dashboard .mb-16 {
+    margin-bottom: var(--admin-space-lg) !important;
+}
+
+.tenant-ui-mock .admin-dashboard .card {
+    border-radius: var(--admin-card-radius);
+}
+
+.tenant-ui-mock .admin-dashboard .card-header {
+    gap: var(--admin-space-sm);
+    align-items: center;
+    margin-bottom: var(--admin-space-md);
+    padding-bottom: var(--admin-space-sm);
+}
+
+.tenant-ui-mock .admin-dashboard .card .stack {
+    gap: 14px;
+}
+
+.tenant-ui-mock .admin-dashboard .structure-card-header {
+    padding: var(--admin-space-md) var(--admin-space-lg);
+    gap: var(--admin-space-sm);
+}
+
+.tenant-ui-mock .admin-dashboard .structure-card-title {
+    font-size: 1rem;
+}
+
+.tenant-ui-mock .admin-dashboard .user-management-toolbar {
+    padding: 0 var(--admin-space-lg) var(--admin-space-md);
+}
+
+.tenant-ui-mock .admin-dashboard .um-role-legend {
+    padding: var(--admin-space-sm) var(--admin-space-lg) var(--admin-space-md);
+    gap: 12px 16px;
+}
+
+.tenant-ui-mock .admin-dashboard .um-cards-wrap {
+    padding: 0 var(--admin-space-lg) var(--admin-space-lg);
+    gap: var(--admin-space-lg);
+}
+
+.tenant-ui-mock .admin-dashboard .classes-hero-card {
+    padding: var(--admin-space-md) var(--admin-space-lg);
+}
+
+.tenant-ui-mock .admin-dashboard .classes-hero-inner {
+    gap: var(--admin-space-md) var(--admin-space-lg);
+}
+
+.tenant-ui-mock .admin-dashboard .classes-hero-cta-wrap {
+    padding: var(--admin-space-md) var(--admin-space-lg);
+}
+
+.tenant-ui-mock .admin-dashboard .classes-hero-cta-hint {
+    margin-top: var(--admin-space-sm);
+}
+
+.tenant-ui-mock .admin-dashboard .class-filter-form {
+    padding: var(--admin-space-sm) var(--admin-space-md);
+}
+
+.tenant-ui-mock .admin-dashboard .classes-tab .card-header {
+    padding: var(--admin-space-md) var(--admin-space-lg);
+}
+
+.tenant-ui-mock .admin-dashboard .admin-structure-panels {
+    gap: var(--admin-space-lg);
+}
+
+.tenant-ui-mock .admin-dashboard .toolbar {
+    margin-bottom: var(--admin-space-md);
+    gap: var(--admin-space-sm);
+}
+
+.tenant-ui-mock .admin-dashboard .card .role-actions {
+    gap: 12px;
+}
+
+@media (max-width: 720px) {
+    .tenant-ui-mock .admin-dashboard .tabs {
+        padding: 10px;
+    }
+
+    .tenant-ui-mock .admin-dashboard .tab-btn {
+        flex: 1 1 auto;
+        justify-content: center;
+        min-width: min(100%, 140px);
     }
 }
 </style>

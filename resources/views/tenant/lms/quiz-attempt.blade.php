@@ -3,26 +3,28 @@
 @section('title', $quiz->title . ' - Quiz')
 
 @section('content')
-<div class="app-shell lms-dashboard-shell">
-    @include('tenant.partials.sidebar', ['active' => 'class'])
+@include('tenant.partials.tenant-mock-ui')
+<div class="app-shell tenant-ui-mock">
+    @include('tenant.partials.sidebar', ['active' => 'class', 'sidebarClass' => 'sidebar--edu-mock'])
 
     <div class="main-content">
-        <div class="lms-topbar">
-            <div class="lms-topbar-left">
-                <a href="{{ url('/tenant/classes/'.$quiz->class_group_id.'/'.$quiz->subject_id) }}" class="lms-topbar-menu">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-                </a>
-                <h1 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0;">{{ $quiz->title }}</h1>
-            </div>
-            @if($quiz->time_limit_minutes && $attempt)
-            <div style="margin-left:auto; display:flex; align-items:center; gap:10px;">
-                <span style="font-size:0.8rem; color:#64748b; font-weight:700;">Time Remaining</span>
-                <div id="quiz-timer" style="min-width:110px; text-align:center; padding:8px 12px; border-radius:10px; background:#0f172a; color:#fff; font-weight:800;">00:00:00</div>
-            </div>
-            @endif
-        </div>
+        @include('tenant.partials.mock-topbar')
 
         <div class="page-body">
+            <div class="lms-topbar">
+                <div class="lms-topbar-left">
+                    <a href="{{ url('/tenant/classes/'.$quiz->class_group_id.'/'.$quiz->subject_id) }}" class="lms-topbar-menu">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                    </a>
+                    <h1 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0;">{{ $quiz->title }}</h1>
+                </div>
+                @if($quiz->time_limit_minutes && $attempt)
+                <div style="margin-left:auto; display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:0.8rem; color:#64748b; font-weight:700;">Time Remaining</span>
+                    <div id="quiz-timer" style="min-width:110px; text-align:center; padding:8px 12px; border-radius:10px; background:#0f172a; color:#fff; font-weight:800;">00:00:00</div>
+                </div>
+                @endif
+            </div>
             <div class="mdl-layout">
                 <main class="mdl-main">
                     @if(!$attempt)
@@ -120,10 +122,9 @@
 </div>
 
 <style>
-.lms-dashboard-shell .main-content { background: #f8fafc; min-height: 100vh; }
-.lms-topbar { background: #fff; height: 60px; display: flex; align-items: center; padding: 0 24px; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 100; }
+.tenant-ui-mock .page-body .lms-topbar { position: relative; top: auto; margin: 0 0 20px 0; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+.lms-topbar { background: #fff; height: 60px; display: flex; align-items: center; padding: 0 24px; }
 .lms-topbar-menu { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: #f1f5f9; color: #64748b; margin-right: 16px; }
-.page-body { max-width: 800px; margin: 0 auto; padding: 32px 20px; }
 .mdl-block { background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; }
 .mdl-block-title { padding: 12px 24px; background: #fafbff; border-bottom: 1px solid #eef2f7; font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
 .lms-input { width: 100%; padding: 16px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 0.95rem; resize: vertical; }

@@ -1,28 +1,14 @@
 @extends('layouts.app')
 
-@section('title', 'Review Tuition & Pay - School Portal')
+@section('title', ($isTuitionBreakdown ?? true) ? 'Review Tuition & Pay - School Portal' : 'Review Bill & Pay - School Portal')
 
 @section('content')
-<div class="app-shell">
-    @include('tenant.partials.sidebar', ['active' => 'payments'])
+@include('tenant.partials.tenant-mock-ui')
+<div class="app-shell tenant-ui-mock">
+    @include('tenant.partials.sidebar', ['active' => 'payments', 'sidebarClass' => 'sidebar--edu-mock'])
 
     <div class="main-content">
-        <header class="topbar">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <button class="hamburger" aria-label="Toggle menu">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-                    </svg>
-                </button>
-                <span class="topbar-title">Review Tuition & Pay</span>
-            </div>
-            <div class="topbar-right">
-                <div class="topbar-user">
-                    <div class="avatar">{{ strtoupper(substr(auth()->user()->full_name ?? 'U', 0, 1)) }}</div>
-                    <span>{{ auth()->user()->full_name ?? 'User' }}</span>
-                </div>
-            </div>
-        </header>
+        @include('tenant.partials.mock-topbar')
 
         <main class="page-body">
             @if(session('status'))
@@ -44,42 +30,66 @@
 
             <div class="card" style="margin-bottom:16px;">
                 <div class="card-header">
-                    <h2>Tuition Breakdown</h2>
+                    <h2>{{ ($isTuitionBreakdown ?? true) ? 'Tuition Breakdown' : 'Bill details' }}</h2>
                     <span class="badge">Billing #{{ (int) $billing->id }}</span>
                 </div>
                 <div class="table-wrap" style="margin:0;">
                     <table>
                         <thead>
                             <tr>
-                                <th>Subject</th>
-                                <th>Title</th>
-                                <th>Units</th>
-                                <th>Amount</th>
+                                @if($isTuitionBreakdown ?? true)
+                                    <th>Subject</th>
+                                    <th>Title</th>
+                                    <th>Units</th>
+                                    <th>Amount</th>
+                                @else
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                    <th style="text-align:right;">Amount</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
                             @forelse(($breakdown ?? collect()) as $row)
                                 <tr>
-                                    <td><span class="badge blue">{{ $row['code'] ?? 'N/A' }}</span></td>
-                                    <td>{{ $row['title'] ?? '-' }}</td>
-                                    <td style="text-align:right;">{{ number_format((float) ($row['units'] ?? 0), 0) }}</td>
-                                    <td style="text-align:right; font-weight:600;">₱ {{ number_format((float) ($row['amount'] ?? 0), 2) }}</td>
+                                    @if($isTuitionBreakdown ?? true)
+                                        <td><span class="badge blue">{{ $row['code'] ?? 'N/A' }}</span></td>
+                                        <td>{{ $row['title'] ?? '-' }}</td>
+                                        <td style="text-align:right;">{{ number_format((float) ($row['units'] ?? 0), 0) }}</td>
+                                        <td style="text-align:right; font-weight:600;">₱ {{ number_format((float) ($row['amount'] ?? 0), 2) }}</td>
+                                    @else
+                                        <td><span class="badge blue">{{ $row['code'] ?? '—' }}</span></td>
+                                        <td>{{ $row['title'] ?? '-' }}</td>
+                                        <td style="text-align:right; font-weight:600;">₱ {{ number_format((float) ($row['amount'] ?? 0), 2) }}</td>
+                                    @endif
                                 </tr>
                             @empty
-                                <tr><td colspan="4"><div class="empty-state"><p>No subjects found for this semester.</p></div></td></tr>
+                                <tr><td colspan="{{ ($isTuitionBreakdown ?? true) ? 4 : 3 }}"><div class="empty-state"><p>{{ ($isTuitionBreakdown ?? true) ? 'No subjects found for this semester.' : 'No line items for this bill.' }}</p></div></td></tr>
                             @endforelse
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colspan="3" style="text-align:right; font-weight:600;">Total Due</td>
+                                @if($isTuitionBreakdown ?? true)
+                                    <td colspan="3" style="text-align:right; font-weight:600;">Total Due</td>
+                                @else
+                                    <td colspan="2" style="text-align:right; font-weight:600;">Total Due</td>
+                                @endif
                                 <td style="text-align:right; font-weight:700;">₱ {{ number_format((float) $totalDue, 2) }}</td>
                             </tr>
                             <tr>
-                                <td colspan="3" style="text-align:right;">Amount Paid</td>
+                                @if($isTuitionBreakdown ?? true)
+                                    <td colspan="3" style="text-align:right;">Amount Paid</td>
+                                @else
+                                    <td colspan="2" style="text-align:right;">Amount Paid</td>
+                                @endif
                                 <td style="text-align:right;">₱ {{ number_format((float) $amountPaid, 2) }}</td>
                             </tr>
                             <tr>
-                                <td colspan="3" style="text-align:right;">Remaining</td>
+                                @if($isTuitionBreakdown ?? true)
+                                    <td colspan="3" style="text-align:right;">Remaining</td>
+                                @else
+                                    <td colspan="2" style="text-align:right;">Remaining</td>
+                                @endif
                                 <td style="text-align:right;">₱ {{ number_format((float) $remaining, 2) }}</td>
                             </tr>
                         </tfoot>
@@ -97,15 +107,17 @@
                         <form method="POST" action="{{ url('/tenant/billing/' . (int) $billing->id . '/pay/paymongo') }}" style="margin:0;">
                             @csrf
                             <input type="hidden" name="wallet" value="gcash">
-                            <button class="btn success" type="submit" {{ $remaining <= 0 ? 'disabled' : '' }} style="width:100%; display:flex; align-items:center; justify-content:center; gap:10px;">
-                                <span style="font-size:1.25rem;">💙</span> Pay with GCash — ₱ {{ number_format((float) $remaining, 2) }}
+                            <button class="btn gcash" type="submit" {{ $remaining <= 0 ? 'disabled' : '' }} style="width:100%; display:flex; align-items:center; justify-content:center; gap:10px;">
+                                <img src="{{ asset('images/payments/gcash.webp') }}" alt="" width="24" height="24" loading="lazy" decoding="async" style="height:22px;width:auto;max-height:22px;object-fit:contain;flex-shrink:0;display:block;" aria-hidden="true">
+                                <span>Pay with GCash — ₱ {{ number_format((float) $remaining, 2) }}</span>
                             </button>
                         </form>
                         <form method="POST" action="{{ url('/tenant/billing/' . (int) $billing->id . '/pay/paymongo') }}" style="margin:0;">
                             @csrf
                             <input type="hidden" name="wallet" value="paymaya">
                             <button class="btn success" type="submit" {{ $remaining <= 0 ? 'disabled' : '' }} style="width:100%; display:flex; align-items:center; justify-content:center; gap:10px; background:#00a651; border-color:#00a651;">
-                                <span style="font-size:1.25rem;">💚</span> Pay with Maya — ₱ {{ number_format((float) $remaining, 2) }}
+                                <img src="{{ asset('images/payments/maya.svg') }}" alt="" loading="lazy" decoding="async" style="height:18px;width:auto;max-width:72px;object-fit:contain;flex-shrink:0;display:block;filter:brightness(0) invert(1);" aria-hidden="true">
+                                <span>Pay with Maya — ₱ {{ number_format((float) $remaining, 2) }}</span>
                             </button>
                         </form>
                     </div>

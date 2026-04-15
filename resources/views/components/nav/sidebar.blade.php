@@ -74,31 +74,62 @@
     $showAdminLink = $hasAnyPermission(['school_admin.manage_staff', 'school_admin.assign_roles', 'school_admin.manage_curriculum']);
 
     $schoolName = session('active_school_name') ?? session('school_name') ?? null;
+    $schoolLogoUrl = session('active_school_logo_url');
     $primaryRole = $roleCodes->first();
+    $sidebarClass = $sidebarClass ?? '';
+    $isEduMockSidebar = $sidebarClass === 'sidebar--edu-mock';
+    $eduMockBrandLogoUrl = null;
+    if ($isEduMockSidebar && $activeSchoolId > 0) {
+        $schoolForBrand = \App\Models\School::query()->find($activeSchoolId);
+        if ($schoolForBrand !== null) {
+            $eduMockBrandLogoUrl = $schoolForBrand->schoolSealLogoUrl() ?? $schoolForBrand->logo_url;
+        }
+        if ($eduMockBrandLogoUrl === null && $schoolLogoUrl) {
+            $eduMockBrandLogoUrl = $schoolLogoUrl;
+        }
+    }
 @endphp
 
-<aside class="sidebar">
+<aside class="sidebar {{ $sidebarClass }}">
     <div class="sidebar-brand">
-        <div class="sidebar-brand-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
-            </svg>
-        </div>
-        <div>
-            <div class="sidebar-brand-text">EduPlatform</div>
-            <div class="sidebar-brand-sub">
-                @if($schoolName)
-                    {{ $schoolName }}
+        @if ($isEduMockSidebar)
+            <div class="sidebar-brand-mock-mark {{ $eduMockBrandLogoUrl ? 'sidebar-brand-mock-mark--has-logo' : 'sidebar-brand-mock-mark--fallback' }}">
+                @if ($eduMockBrandLogoUrl)
+                    <img src="{{ $eduMockBrandLogoUrl }}" alt="" width="44" height="44" decoding="async">
                 @else
-                    School Portal
+                    <span class="sidebar-brand-mock-fallback" aria-hidden="true">{{ strtoupper(mb_substr((string) ($schoolName ?: 'S'), 0, 1)) }}</span>
                 @endif
             </div>
-            @if($primaryRole)
-                <div class="sidebar-brand-role">
-                    <span class="sidebar-brand-role-pill">{{ strtoupper($primaryRole) }}</span>
+            <div class="sidebar-brand-text-block sidebar-brand-text-block--edu-mock">
+                <div class="sidebar-brand-primary sidebar-brand-primary--edu-mock">{{ $schoolName ?? 'School' }}</div>
+                @if ($primaryRole)
+                    <div class="sidebar-brand-role">
+                        <span class="sidebar-brand-role-pill sidebar-brand-role-pill--edu-mock">{{ strtoupper($primaryRole) }}</span>
+                    </div>
+                @endif
+            </div>
+        @else
+            @if ($schoolLogoUrl)
+                <div class="sidebar-brand-logo-wrap">
+                    <img src="{{ $schoolLogoUrl }}" alt="{{ $schoolName ?? 'School' }}" class="sidebar-brand-logo" width="44" height="44" decoding="async">
+                </div>
+            @else
+                <div class="sidebar-brand-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                    </svg>
                 </div>
             @endif
-        </div>
+            <div class="sidebar-brand-text-block">
+                <div class="sidebar-brand-primary">{{ $schoolName ?? 'School' }}</div>
+                <div class="sidebar-brand-platform">EduPlatform</div>
+                @if($primaryRole)
+                    <div class="sidebar-brand-role">
+                        <span class="sidebar-brand-role-pill">{{ strtoupper($primaryRole) }}</span>
+                    </div>
+                @endif
+            </div>
+        @endif
     </div>
 
     <nav class="sidebar-nav">
@@ -175,7 +206,7 @@
             @endphp
             <div class="sidebar-section-label">Finance</div>
 
-            <button class="sidebar-submenu-toggle {{ $isFinanceActive ? 'has-active open' : '' }}"
+            <button class="sidebar-submenu-toggle sidebar-submenu-toggle--finance {{ $isFinanceActive ? 'has-active open' : '' }}"
                     type="button" aria-expanded="{{ $isFinanceActive ? 'true' : 'false' }}">
                 <svg class="icon-main" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
@@ -217,7 +248,7 @@
                         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                         <polyline points="9 22 9 12 15 12 15 22"/>
                     </svg>
-                    School page
+                    Branding &amp; Public Page
                 </a>
             @endif
 
@@ -227,25 +258,47 @@
                         <circle cx="12" cy="12" r="3"/>
                         <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
                     </svg>
-                    School Management
+                    Academic Management
                 </a>
             @endif
+
+            @php
+                $settingsActives = ['settings-appearance', 'settings-account'];
+                $isSettingsActive = in_array($active, $settingsActives, true);
+            @endphp
+            <div class="sidebar-section-label">Settings</div>
+
+            <button class="sidebar-submenu-toggle {{ $isSettingsActive ? 'has-active open' : '' }}"
+                    type="button"
+                    aria-expanded="{{ $isSettingsActive ? 'true' : 'false' }}"
+                    aria-controls="sidebar-settings-submenu">
+                <svg class="icon-main" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                Settings
+                <svg class="sidebar-submenu-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"/>
+                </svg>
+            </button>
+
+            <div id="sidebar-settings-submenu" class="sidebar-submenu {{ $isSettingsActive ? 'open' : '' }}">
+                <div class="sidebar-submenu-inner">
+                    <a href="{{ url('/tenant/settings/appearance') }}" class="sidebar-sublink {{ $active === 'settings-appearance' ? 'active' : '' }}">
+                        Appearance
+                    </a>
+                    <a href="{{ url('/tenant/settings/account') }}" class="sidebar-sublink {{ $active === 'settings-account' ? 'active' : '' }}">
+                        Account
+                    </a>
+                    <form method="post" action="{{ url('/logout') }}" style="margin-top: 10px;" class="sidebar-logout-form">
+                        @csrf
+                        <button type="submit" class="sidebar-sublink" style="width:100%; text-align:left; background:transparent; border:0; padding-left: 10px; padding-right: 10px; cursor:pointer;">
+                            Sign Out
+                        </button>
+                    </form>
+                </div>
+            </div>
         @endif
     </nav>
-
-    <div class="sidebar-footer">
-        <form method="post" action="{{ url('/logout') }}">
-            @csrf
-            <button class="btn ghost full" type="submit" style="justify-content:flex-start; gap:8px; color:var(--muted);">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                    <polyline points="16 17 21 12 16 7"/>
-                    <line x1="21" y1="12" x2="9" y2="12"/>
-                </svg>
-                Sign Out
-            </button>
-        </form>
-    </div>
 </aside>
 
 <div class="sidebar-overlay"></div>

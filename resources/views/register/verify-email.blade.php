@@ -12,7 +12,7 @@
                         <path d="M4 21h16"/><path d="M6 21V7l6-4 6 4v14"/><path d="M10 11h4"/><path d="M10 15h4"/>
                     </svg>
                 </div>
-                <span style="font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; font-size:1rem; color:var(--ink);">School Registration</span>
+                <span style="font-weight:700; font-size:1rem; color:var(--ink);">School Registration</span>
             </a>
             <span class="badge blue">Email Verification</span>
         </div>

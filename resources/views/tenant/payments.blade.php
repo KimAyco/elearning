@@ -3,26 +3,12 @@
 @section('title', 'Payments - School Portal')
 
 @section('content')
-<div class="app-shell">
-    @include('tenant.partials.sidebar', ['active' => 'payments'])
+@include('tenant.partials.tenant-mock-ui')
+<div class="app-shell tenant-ui-mock">
+    @include('tenant.partials.sidebar', ['active' => 'payments', 'sidebarClass' => 'sidebar--edu-mock'])
 
     <div class="main-content">
-        <header class="topbar">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <button class="hamburger" aria-label="Toggle menu">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-                    </svg>
-                </button>
-                <span class="topbar-title">Payments</span>
-            </div>
-            <div class="topbar-right">
-                <div class="topbar-user">
-                    <div class="avatar">{{ strtoupper(substr(auth()->user()->full_name ?? 'U', 0, 1)) }}</div>
-                    <span>{{ auth()->user()->full_name ?? 'User' }}</span>
-                </div>
-            </div>
-        </header>
+        @include('tenant.partials.mock-topbar')
 
         <main class="page-body">
             @if(session('status'))

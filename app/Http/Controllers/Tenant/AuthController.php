@@ -70,6 +70,8 @@ class AuthController extends Controller
         $request->session()->regenerate();
         $request->session()->put('user_id', (int) $user->id);
         $request->session()->put('active_school_id', (int) $school->id);
+        $request->session()->put('active_school_name', $school->name);
+        $request->session()->put('active_school_logo_url', $school->schoolSealLogoUrl() ?? $school->logo_url);
         $request->session()->put('role_codes', $roleCodes);
         $request->session()->put('pending_student_activation', false);
         $request->session()->put('permission_codes', $this->rbacService->permissionCodesForUserInSchool((int) $user->id, (int) $school->id));
@@ -146,7 +148,15 @@ class AuthController extends Controller
             );
         }
 
-        $request->session()->forget(['user_id', 'active_school_id', 'role_codes', 'permission_codes', 'pending_student_activation']);
+        $request->session()->forget([
+            'user_id',
+            'active_school_id',
+            'active_school_name',
+            'active_school_logo_url',
+            'role_codes',
+            'permission_codes',
+            'pending_student_activation',
+        ]);
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

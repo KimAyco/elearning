@@ -3,26 +3,12 @@
 @section('title', 'Grades — School Portal')
 
 @section('content')
-<div class="app-shell">
-    @include('tenant.partials.sidebar', ['active' => 'grades'])
+@include('tenant.partials.tenant-mock-ui')
+<div class="app-shell tenant-ui-mock">
+    @include('tenant.partials.sidebar', ['active' => 'grades', 'sidebarClass' => 'sidebar--edu-mock'])
 
     <div class="main-content">
-        <header class="topbar">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <button class="hamburger" aria-label="Toggle menu">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-                    </svg>
-                </button>
-                <span class="topbar-title">{{ ($isStudentGradesView ?? false) ? 'My Grades' : 'Grade Management' }}</span>
-            </div>
-            <div class="topbar-right">
-                <div class="topbar-user">
-                    <div class="avatar">{{ strtoupper(substr(auth()->user()->full_name ?? 'U', 0, 1)) }}</div>
-                    <span>{{ auth()->user()->full_name ?? 'User' }}</span>
-                </div>
-            </div>
-        </header>
+        @include('tenant.partials.mock-topbar')
 
         <main class="page-body">
             @if($isStudentGradesView)
@@ -156,36 +142,61 @@
                                     }
                                 @endphp
                                 
-                                <div class="card" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" 
-                                     onclick="openSubjectGradeModal({{ $subject?->id ?? 0 }}, {{ $classGroup?->id ?? 0 }}, '{{ $subject?->code ?? 'N/A' }}', '{{ $classGroup?->name ?? 'N/A' }}')">
-                                    <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px;">
-                                        <div>
-                                            <div style="font-size: 0.75rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em;">
-                                                {{ $subject?->code ?? 'N/A' }}
+                                <div
+                                    class="card"
+                                    style="
+                                        cursor: pointer;
+                                        display: flex;
+                                        flex-direction: column;
+                                        box-sizing: border-box;
+                                        transition: transform 0.2s, box-shadow 0.2s;
+                                        min-height: 270px;
+                                        @if($studentCount === 0) opacity: 0.75; @endif
+                                    "
+                                    onclick="openSubjectGradeModal({{ $subject?->id ?? 0 }}, {{ $classGroup?->id ?? 0 }}, '{{ $subject?->code ?? 'N/A' }}', '{{ $classGroup?->name ?? 'N/A' }}')"
+                                >
+                                    <div class="card-header">
+                                        <div style="display:flex; align-items:flex-start; gap: 12px; min-width: 0;">
+                                            <div class="card-icon purple" aria-hidden="true" style="margin-top: 2px;">
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M22 7.5V19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7.5"></path>
+                                                    <path d="M2 7.5l10-5 10 5"></path>
+                                                    <path d="M6 12h4"></path>
+                                                    <path d="M6 16h8"></path>
+                                                </svg>
                                             </div>
-                                            <h3 style="margin: 4px 0 0; font-size: 1.1rem;">{{ $subject?->title ?? 'Untitled' }}</h3>
+                                            <div style="min-width: 0;">
+                                                <div style="font-size: 0.75rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em;">
+                                                    {{ $subject?->code ?? 'N/A' }}
+                                                </div>
+                                                <h3 style="margin: 6px 0 0; font-size: 1.05rem; line-height: 1.25;">
+                                                    {{ $subject?->title ?? 'Untitled' }}
+                                                </h3>
+                                            </div>
                                         </div>
-                                        <span class="badge blue">{{ $studentCount }} students</span>
                                     </div>
-                                    
-                                    <div style="font-size: 0.875rem; color: var(--muted); margin-bottom: 16px;">
-                                        <strong>Class:</strong> {{ $classGroup?->name ?? 'N/A' }}
+
+                                    <div style="display:flex; align-items:center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px;">
+                                        <div style="font-size: 0.875rem; color: var(--muted);">
+                                            <strong>Class:</strong> {{ $classGroup?->name ?? 'N/A' }}
+                                        </div>
+                                        <span class="badge blue" title="Total enrolled students">{{ $studentCount }} STUDENTS</span>
                                     </div>
-                                    
-                                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                                        @if($draftCount > 0)
-                                            <span class="badge amber">{{ $draftCount }} pending</span>
-                                        @endif
+
+                                    <div style="display:flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;">
+                                        <span class="badge amber" title="Grades still in draft/pending">{{ $draftCount }} PENDING</span>
                                         @if($submittedCount > 0)
-                                            <span class="badge blue">{{ $submittedCount }} submitted</span>
+                                            <span class="badge blue" title="Submitted for review">{{ $submittedCount }} SUBMITTED</span>
                                         @endif
                                         @if($completedCount > 0)
-                                            <span class="badge green">{{ $completedCount }} completed</span>
+                                            <span class="badge green" title="Approved/finalized/released">{{ $completedCount }} COMPLETED</span>
                                         @endif
                                     </div>
-                                    
-                                    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--accent); font-weight: 600; font-size: 0.875rem;">
-                                        Click to manage grades →
+
+                                    <div style="margin-top: auto; padding-top: 14px; border-top: 1px solid var(--border); display:flex; align-items:center; justify-content: space-between; gap: 12px;">
+                                        <div class="btn secondary sm" style="pointer-events:none; background: var(--bg-2); border-color: var(--border);">
+                                            Manage grades →
+                                        </div>
                                     </div>
                                 </div>
                             @endforeach

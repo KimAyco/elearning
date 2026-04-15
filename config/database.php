@@ -59,6 +59,8 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
+                // Do not use numeric 1002 for "connect timeout" on PHP 8.2: 1002 is PDO::MYSQL_ATTR_INIT_COMMAND here,
+                // and setting it to an integer breaks the connection (SQL syntax error near '5').
                 (PHP_VERSION_ID >= 80500 ? \Pdo\Mysql::ATTR_SSL_CA : \PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],

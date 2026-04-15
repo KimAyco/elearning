@@ -56,9 +56,10 @@ class PlatformPrototypeTest extends TestCase
             'password' => 'password123',
         ]);
 
-        $loginResponse->assertRedirect('/superadmin/schools');
+        $loginResponse->assertRedirect(route('superadmin.dashboard'));
 
-        $this->get('/superadmin/schools')->assertOk();
+        $this->get(route('superadmin.dashboard'))->assertOk();
+        $this->get(route('superadmin.schools'))->assertOk();
         $this->getJson('/api/tenant/enrollments/mine')->assertStatus(401);
     }
 

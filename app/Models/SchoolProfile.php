@@ -30,7 +30,26 @@ class SchoolProfile extends Model
         'campus_bullet2',
         'campus_bullet3',
         'campus_bullet4',
+        'footer_title',
+        'footer_description',
+        'footer_address',
+        'footer_email',
+        'footer_phone',
+        'footer_copyright',
+        'footer_quick_links',
+        'footer_social_facebook',
+        'footer_social_instagram',
+        'footer_social_x',
+        'footer_social_youtube',
+        'footer_social_website',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'footer_quick_links' => 'array',
+        ];
+    }
 
     public function school(): BelongsTo
     {

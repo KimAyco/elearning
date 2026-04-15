@@ -1,43 +1,52 @@
 @extends('layouts.app')
 
-@section('title', 'School page - School Portal')
+@section('title', 'Branding & Public Page - School Portal')
 
 @push('styles')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" integrity="sha512-hvNR0F/e2J7zPPfLC1au5t/7vOuRqJ8+4RJRPr4VZT1H0f4ZGW+3EHTBzI3hmU1dXoy6nE0TxAhPMErrnbQ+fg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 @endpush
 
 @section('content')
-<div class="app-shell">
-    @include('tenant.partials.sidebar', ['active' => $active ?? 'school-page'])
+@include('tenant.partials.tenant-mock-ui')
+<div class="app-shell tenant-ui-mock">
+    @include('tenant.partials.sidebar', ['active' => $active ?? 'school-page', 'sidebarClass' => 'sidebar--edu-mock'])
 
     <div class="main-content">
-        <header class="topbar">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <button class="hamburger" aria-label="Toggle menu">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-                    </svg>
-                </button>
-                <span class="topbar-title">School page</span>
-            </div>
-            <div class="topbar-right">
-                <div class="topbar-user">
-                    <div class="avatar">
-                        {{ strtoupper(substr(auth()->user()->full_name ?? 'U', 0, 1)) }}
-                    </div>
-                    <span>{{ auth()->user()->full_name ?? 'User' }}</span>
-                </div>
-            </div>
-        </header>
+        @include('tenant.partials.mock-topbar')
 
         <main class="page-body">
-            <div class="school-page-intro">
-                <h1 class="school-page-title">School space</h1>
-                <p class="school-page-sub">Customize how your school appears on the public enrollment page: logo, cover photo, and color theme.</p>
+            <div class="school-page-intro school-page-intro--row">
+                <div class="school-page-intro__left">
+                    <h1 class="school-page-title">School space</h1>
+                    <p class="school-page-sub">Customize how your school appears on the public enrollment page: logo, cover, theme, content, and footer.</p>
+                    <p class="school-page-footer-lead">Use the live preview above for text and images. <a href="#school-page-footer-settings">Footer, contact, quick links &amp; social icons</a> are edited in the section below the preview—then click <strong>Save changes</strong>.</p>
+                </div>
+                <div class="school-page-intro__right">
+                    <button type="button" class="btn secondary sm school-page-preview-btn" id="open-public-preview">
+                        Preview
+                    </button>
+                </div>
             </div>
 
             @php
                 $profile = $school->profile;
+                $existingFooterLinks = ($profile && is_array($profile->footer_quick_links)) ? $profile->footer_quick_links : [];
+                if (old('footer_link_labels') !== null || old('footer_link_urls') !== null) {
+                    $lbls = array_pad((array) old('footer_link_labels', []), 8, '');
+                    $urls = array_pad((array) old('footer_link_urls', []), 8, '');
+                    $footerLinkRows = [];
+                    for ($i = 0; $i < 8; $i++) {
+                        $footerLinkRows[] = ['label' => (string) ($lbls[$i] ?? ''), 'url' => (string) ($urls[$i] ?? '')];
+                    }
+                } else {
+                    $footerLinkRows = [];
+                    for ($i = 0; $i < 8; $i++) {
+                        $footerLinkRows[] = [
+                            'label' => (string) ($existingFooterLinks[$i]['label'] ?? ''),
+                            'url' => (string) ($existingFooterLinks[$i]['url'] ?? ''),
+                        ];
+                    }
+                }
             @endphp
 
             <section class="school-page-preview-shell">
@@ -85,6 +94,7 @@
                                     {{ strtoupper(mb_substr($school->name, 0, 1)) }}
                                 </span>
                             @endif
+                            <span class="school-avatar-plus" aria-hidden="true">+</span>
                         </div>
                         <div class="school-heading">
                             <div class="school-heading-top">
@@ -202,6 +212,11 @@
                 </div>
             </section>
 
+            <div class="school-page-footer-cta" role="note">
+                <p><strong>Public page footer</strong> — description, address, email, phone, quick links, and social URLs (shown as icons only on your public page) are configured below.</p>
+                <a href="#school-page-footer-settings" class="school-page-footer-cta__jump">Jump to footer settings</a>
+            </div>
+
             @if (session('status'))
                 <div class="alert success" style="margin-bottom:1rem;">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -223,6 +238,10 @@
             <form action="{{ url('/tenant/school-page') }}" method="post" enctype="multipart/form-data" class="school-page-form">
                 @csrf
 
+                {{-- Hidden header logo inputs (changed via live preview avatar) --}}
+                <input type="file" name="logo" id="logo" accept="image/*" class="school-logo-picker__input" data-crop="logo" tabindex="-1">
+                <input type="hidden" name="logo_data" id="logo_data" value="">
+
                 <div class="school-page-card">
                     <h2 class="school-page-card-title">Basic info</h2>
                     <div class="form-group">
@@ -232,26 +251,6 @@
                     <div class="form-group">
                         <label for="short_description">Short description / location</label>
                         <input type="text" id="short_description" name="short_description" value="{{ old('short_description', $school->short_description) }}" maxlength="255" class="input">
-                    </div>
-                </div>
-
-                <div class="school-page-card">
-                    <h2 class="school-page-card-title">School logo</h2>
-                    <p class="school-page-card-hint">Shown as the avatar on the public school page. Upload an image and crop it to a square (1:1) before saving.</p>
-                    <div class="school-page-preview-row">
-                        <div class="school-page-logo-preview">
-                            <div class="school-page-logo-placeholder" id="logo-placeholder" style="{{ $school->logo_url ? 'display:none;' : '' }}">
-                                {{ strtoupper(mb_substr($school->name, 0, 1)) }}
-                            </div>
-                            <img src="{{ $school->logo_url ?? '' }}" alt="School logo" id="logo-preview-img" width="112" height="112" style="border-radius:999px; object-fit:cover; {{ $school->logo_url ? '' : 'display:none;' }}">
-                        </div>
-                        <div class="school-page-upload-actions">
-                            <input type="file" name="logo" id="logo" accept="image/*" class="input" data-crop="logo">
-                            <input type="hidden" name="logo_data" id="logo_data" value="">
-                            <label class="school-page-checkbox-label" style="margin-top:8px;">
-                                <input type="checkbox" name="remove_logo" value="1" id="remove_logo"> Remove logo (use initial letter)
-                            </label>
-                        </div>
                     </div>
                 </div>
 
@@ -342,6 +341,81 @@
                     </div>
                 </div>
 
+                <div id="school-page-footer-settings" class="school-page-card school-page-card--visible">
+                    <h2 class="school-page-card-title">Public page footer</h2>
+                    <p class="school-page-card-hint">Shown at the bottom of your public school enrollment page. Social links display as icons only; leave a field empty to hide that network. Link and contact colors follow your <strong>Color theme</strong> in the preview header.</p>
+
+                    <div class="school-page-logo-pair">
+                        <div class="school-page-logo-pair__col">
+                            <h3 class="school-page-card-title school-page-card-title--sub">Footer logo</h3>
+                            <p class="school-page-card-hint">Shown only in the public page footer. Click the circle to change. Square (1:1) crop.</p>
+                            <div class="school-logo-picker-wrap">
+                                <label for="footer_logo" class="school-logo-picker__trigger" title="Change footer logo">
+                                    <span class="school-logo-picker__media">
+                                        <span class="school-logo-picker__initial" id="footer-logo-placeholder" style="{{ $school->footer_logo_url ? 'display:none;' : '' }}">{{ strtoupper(mb_substr($school->name, 0, 1)) }}</span>
+                                        <img src="{{ $school->footer_logo_url ?? '' }}" alt="" id="footer-logo-preview-img" width="112" height="112" style="border-radius:999px; object-fit:cover; {{ $school->footer_logo_url ? '' : 'display:none;' }}">
+                                    </span>
+                                    <span class="school-logo-picker__plus" aria-hidden="true">+</span>
+                                </label>
+                                <input type="file" name="footer_logo" id="footer_logo" accept="image/*" class="school-logo-picker__input" data-crop="footer_logo" tabindex="-1">
+                                <input type="hidden" name="footer_logo_data" id="footer_logo_data" value="">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="footer_title">Footer title (optional)</label>
+                        <input type="text" id="footer_title" name="footer_title" class="input" maxlength="255" placeholder="Defaults to school name if empty" value="{{ old('footer_title', optional($profile)->footer_title) }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="footer_description">Short footer description</label>
+                        <textarea id="footer_description" name="footer_description" class="input" rows="2" style="resize:vertical;" maxlength="1000" placeholder="One or two lines about your institution">{{ old('footer_description', optional($profile)->footer_description) }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="footer_address">Address</label>
+                        <textarea id="footer_address" name="footer_address" class="input" rows="2" style="resize:vertical;" placeholder="Street, city, region">{{ old('footer_address', optional($profile)->footer_address) }}</textarea>
+                    </div>
+                    <div class="form-group school-footer-contact-row">
+                        <div>
+                            <label for="footer_email">Email</label>
+                            <input type="email" id="footer_email" name="footer_email" class="input" value="{{ old('footer_email', optional($profile)->footer_email) }}" placeholder="info@school.edu">
+                        </div>
+                        <div>
+                            <label for="footer_phone">Phone</label>
+                            <input type="text" id="footer_phone" name="footer_phone" class="input" maxlength="80" value="{{ old('footer_phone', optional($profile)->footer_phone) }}" placeholder="+63 …">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="footer_copyright">Copyright line (optional)</label>
+                        <input type="text" id="footer_copyright" name="footer_copyright" class="input" maxlength="500" placeholder="e.g. © {{ date('Y') }} {{ $school->name }}. All rights reserved." value="{{ old('footer_copyright', optional($profile)->footer_copyright) }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Quick links</label>
+                        <p class="school-page-card-hint" style="margin-top:0;">Up to 8 links. Use full URLs (https://…).</p>
+                        <div class="school-footer-links-editor">
+                            @foreach($footerLinkRows as $idx => $row)
+                                <div class="school-footer-links-editor__row">
+                                    <input type="text" name="footer_link_labels[]" class="input" placeholder="Label" maxlength="120" value="{{ $row['label'] }}">
+                                    <input type="text" name="footer_link_urls[]" class="input" placeholder="https://…" maxlength="500" value="{{ $row['url'] }}">
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Social media (URL only)</label>
+                        <p class="school-page-card-hint" style="margin-top:0;">Icons appear on the public page only when a URL is set.</p>
+                        <div style="display:grid; gap:10px;">
+                            <input type="text" name="footer_social_facebook" class="input" placeholder="Facebook URL" value="{{ old('footer_social_facebook', optional($profile)->footer_social_facebook) }}">
+                            <input type="text" name="footer_social_instagram" class="input" placeholder="Instagram URL" value="{{ old('footer_social_instagram', optional($profile)->footer_social_instagram) }}">
+                            <input type="text" name="footer_social_x" class="input" placeholder="X (Twitter) URL" value="{{ old('footer_social_x', optional($profile)->footer_social_x) }}">
+                            <input type="text" name="footer_social_youtube" class="input" placeholder="YouTube URL" value="{{ old('footer_social_youtube', optional($profile)->footer_social_youtube) }}">
+                            <input type="text" name="footer_social_website" class="input" placeholder="Main website URL" value="{{ old('footer_social_website', optional($profile)->footer_social_website) }}">
+                        </div>
+                    </div>
+                </div>
+
                 <div class="school-page-actions">
                     <button type="submit" class="btn primary">Save changes</button>
                 </div>
@@ -370,6 +444,26 @@
     </div>
 </div>
 
+{{-- Crop modal: footer logo (square) --}}
+<div id="crop-modal-footer-logo" class="crop-modal" aria-hidden="true">
+    <div class="crop-modal-backdrop"></div>
+    <div class="crop-modal-box">
+        <div class="crop-modal-header">
+            <h3>Crop footer logo to square</h3>
+            <button type="button" class="crop-modal-close" data-dismiss="crop-modal-footer-logo" aria-label="Close">&times;</button>
+        </div>
+        <div class="crop-modal-body">
+            <div class="crop-container" style="max-height:70vh;">
+                <img id="crop-img-footer-logo" src="" alt="Crop">
+            </div>
+        </div>
+        <div class="crop-modal-footer">
+            <button type="button" class="btn secondary crop-cancel" data-dismiss="crop-modal-footer-logo">Cancel</button>
+            <button type="button" class="btn primary crop-apply" data-crop="footer_logo">Apply</button>
+        </div>
+    </div>
+</div>
+
 {{-- Crop modal: cover (square) --}}
 <div id="crop-modal-cover" class="crop-modal" aria-hidden="true">
     <div class="crop-modal-backdrop"></div>
@@ -390,10 +484,43 @@
     </div>
 </div>
 
+{{-- Public page preview modal (iframe) --}}
+<div id="public-preview-modal" class="public-preview-modal" aria-hidden="true" aria-label="Public page preview" role="dialog">
+    <div class="public-preview-modal__backdrop" data-dismiss="public-preview-modal"></div>
+    <div class="public-preview-modal__box" role="document">
+        <div class="public-preview-modal__header">
+            <div class="public-preview-modal__title">
+                <strong>Public preview</strong>
+                <span class="public-preview-modal__sub">This is what visitors see on your enrollment page.</span>
+            </div>
+            <div class="public-preview-modal__actions">
+                <button type="button" class="btn secondary sm" data-dismiss="public-preview-modal">Close</button>
+            </div>
+        </div>
+        <div class="public-preview-modal__body">
+            <iframe
+                id="public-preview-iframe"
+                title="Public enrollment preview"
+                src=""
+                loading="lazy"
+                referrerpolicy="no-referrer"
+            ></iframe>
+        </div>
+    </div>
+</div>
+
 <style>
 .school-page-intro { margin-bottom: 1.5rem; }
 .school-page-title { font-size: 1.35rem; font-weight: 700; color: var(--ink); margin-bottom: 0.35rem; }
 .school-page-sub { color: var(--muted); font-size: 0.9rem; }
+.school-page-intro--row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.school-page-intro__left { min-width: 0; }
+.school-page-intro__right { flex-shrink: 0; padding-top: 2px; }
+.school-page-preview-btn { white-space: nowrap; }
+@media (max-width: 720px) {
+    .school-page-intro--row { flex-direction: column; align-items: stretch; }
+    .school-page-intro__right { padding-top: 0; display: flex; justify-content: flex-end; }
+}
 .school-page-preview-shell {
     margin-bottom: 1.5rem;
     border-radius: var(--radius-lg);
@@ -435,12 +562,139 @@
 .school-preview-card {
     margin: 0 10px;
 }
-.school-page-form { max-width: 640px; }
-/* Hide legacy editor cards; editing is done directly in the preview above */
+.school-page-form { max-width: none; width: 100%; }
+/* Hide legacy editor cards; inline preview + JS sync cover most fields. Footer has no preview wiring — keep it visible. */
 .school-page-card {
     display: none;
 }
+.school-page-card.school-page-card--visible {
+    display: block;
+    margin-bottom: 1rem;
+    padding: 1.35rem 1.25rem;
+    border-radius: var(--radius-lg, 12px);
+    border: 1px solid var(--border, rgba(15, 23, 42, 0.12));
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+.school-page-footer-lead {
+    margin: 0.5rem 0 0;
+    font-size: 0.88rem;
+    color: var(--muted, #64748b);
+    line-height: 1.45;
+    max-width: 52rem;
+}
+.school-page-footer-lead a {
+    color: #15803d;
+    font-weight: 600;
+    text-decoration: none;
+}
+.school-page-footer-lead a:hover {
+    text-decoration: underline;
+}
+.school-page-footer-cta {
+    margin-bottom: 1rem;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px dashed rgba(22, 163, 74, 0.35);
+    background: rgba(240, 253, 244, 0.65);
+    font-size: 0.88rem;
+    color: #334155;
+    line-height: 1.45;
+}
+.school-page-footer-cta p {
+    margin: 0 0 8px;
+}
+.school-page-footer-cta__jump {
+    display: inline-block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #15803d;
+    text-decoration: none;
+}
+.school-page-footer-cta__jump:hover {
+    text-decoration: underline;
+}
 .school-page-card-title { font-size: 1rem; font-weight: 600; color: var(--ink); margin-bottom: 0.25rem; }
+.school-page-card-title--sub { font-size: 0.95rem; margin-top: 0.75rem; margin-bottom: 0.2rem; }
+.school-page-logo-pair {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem 2rem;
+    margin-bottom: 0.75rem;
+}
+@media (max-width: 720px) {
+    .school-page-logo-pair { grid-template-columns: 1fr; }
+}
+.school-logo-picker-wrap { position: relative; }
+.school-logo-picker__input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+.school-logo-picker__trigger {
+    position: relative;
+    display: block;
+    width: 112px;
+    height: 112px;
+    border-radius: 50%;
+    overflow: visible;
+    cursor: pointer;
+    border: 2px dashed rgba(15, 23, 42, 0.14);
+    background: #f8fafc;
+    box-sizing: border-box;
+}
+.school-logo-picker__trigger:hover {
+    border-color: rgba(22, 163, 74, 0.45);
+}
+.school-logo-picker__media {
+    display: block;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    border-radius: inherit;
+}
+.school-logo-picker__initial {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: #fff;
+    background: var(--ink, #0f172a);
+}
+.school-logo-picker__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.school-logo-picker__plus {
+    position: absolute;
+    right: -6px;
+    bottom: 10px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(21, 128, 61, 0.92);
+    border: 2px solid #ffffff;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    pointer-events: none;
+}
 .school-page-card-hint { font-size: 0.8rem; color: var(--muted); margin-bottom: 1rem; }
 .school-page-preview-row { display: flex; align-items: flex-start; gap: 1.5rem; flex-wrap: wrap; }
 .school-page-logo-preview { flex-shrink: 0; }
@@ -467,6 +721,15 @@
 .form-group label { display: block; font-size: 0.9rem; font-weight: 500; color: var(--ink-2); margin-bottom: 0.35rem; }
 .school-page-actions { margin-top: 1rem; }
 .school-page-facts-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.school-footer-links-editor { display: flex; flex-direction: column; gap: 8px; }
+.school-footer-links-editor__row { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; align-items: stretch; }
+@media (max-width: 720px) {
+    .school-footer-links-editor__row { grid-template-columns: 1fr; }
+}
+.school-footer-contact-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 640px) {
+    .school-footer-contact-row { grid-template-columns: 1fr; }
+}
 
 /* Preview hero styles (mirrors public school page) */
 .school-detail-card {
@@ -542,6 +805,24 @@
     object-fit: cover;
     border-radius: 999px;
     display: block;
+}
+.school-avatar-plus {
+    position: absolute;
+    right: -6px;
+    bottom: 10px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(21, 128, 61, 0.92);
+    border: 2px solid #ffffff;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    pointer-events: none;
 }
 .school-heading-top {
     display: flex;
@@ -723,6 +1004,41 @@
 .crop-container { width: 100%; min-height: 280px; }
 .crop-container img { max-width: 100%; display: block; }
 .crop-modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1rem 1.25rem; border-top: 1px solid var(--border); }
+
+/* Public preview modal */
+.public-preview-modal { position: fixed; inset: 0; z-index: 9998; display: flex; align-items: center; justify-content: center; padding: 18px; }
+.public-preview-modal[aria-hidden="true"] { display: none; }
+.public-preview-modal__backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.58); }
+.public-preview-modal__box {
+    position: relative;
+    width: min(1180px, 96vw);
+    height: min(86vh, 860px);
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.35);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.public-preview-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.10);
+    background: #f8fafc;
+}
+.public-preview-modal__title { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.public-preview-modal__sub { font-size: 0.78rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.public-preview-modal__actions { display: flex; gap: 8px; flex-shrink: 0; }
+.public-preview-modal__body { flex: 1; background: #ffffff; }
+.public-preview-modal__body iframe { width: 100%; height: 100%; border: 0; background: #ffffff; }
+@media (max-width: 640px) {
+    .public-preview-modal { padding: 10px; }
+    .public-preview-modal__box { height: 92vh; width: 98vw; border-radius: 12px; }
+    .public-preview-modal__actions .btn { padding-inline: 10px; }
+}
 </style>
 
 @push('scripts')
@@ -732,20 +1048,27 @@
     var Cropper = window.Cropper;
 
     var logoInput = document.getElementById('logo');
+    var footerLogoInput = document.getElementById('footer_logo');
     var coverInput = document.getElementById('cover');
     var logoData = document.getElementById('logo_data');
+    var footerLogoData = document.getElementById('footer_logo_data');
     var coverData = document.getElementById('cover_data');
     var logoPreview = document.getElementById('logo-preview-img');
     var logoPlaceholder = document.getElementById('logo-placeholder');
+    var footerLogoPreview = document.getElementById('footer-logo-preview-img');
+    var footerLogoPlaceholder = document.getElementById('footer-logo-placeholder');
     var coverPreview = document.getElementById('cover-preview-img');
     var coverPlaceholder = document.getElementById('cover-placeholder');
 
     var logoModal = document.getElementById('crop-modal-logo');
+    var footerLogoModal = document.getElementById('crop-modal-footer-logo');
     var coverModal = document.getElementById('crop-modal-cover');
     var cropImgLogo = document.getElementById('crop-img-logo');
+    var cropImgFooterLogo = document.getElementById('crop-img-footer-logo');
     var cropImgCover = document.getElementById('crop-img-cover');
 
     var pendingLogoDataUrl = null;
+    var pendingFooterLogoDataUrl = null;
     var pendingCoverDataUrl = null;
 
     function closeCropModal(modalId) {
@@ -755,12 +1078,14 @@
         modal.style.display = 'none';
         if (modalId === 'crop-modal-logo') {
             pendingLogoDataUrl = null;
+        } else if (modalId === 'crop-modal-footer-logo') {
+            pendingFooterLogoDataUrl = null;
         } else if (modalId === 'crop-modal-cover') {
             pendingCoverDataUrl = null;
         }
     }
 
-    logoInput.addEventListener('change', function () {
+    if (logoInput) logoInput.addEventListener('change', function () {
         var file = this.files && this.files[0];
         if (!file || !file.type.match(/^image\//)) return;
 
@@ -776,6 +1101,25 @@
         reader.readAsDataURL(file);
         this.value = '';
     });
+
+    if (footerLogoInput) {
+        footerLogoInput.addEventListener('change', function () {
+            var file = this.files && this.files[0];
+            if (!file || !file.type.match(/^image\//)) return;
+
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                pendingFooterLogoDataUrl = e.target.result;
+                if (cropImgFooterLogo) cropImgFooterLogo.src = pendingFooterLogoDataUrl;
+                if (footerLogoModal) {
+                    footerLogoModal.setAttribute('aria-hidden', 'false');
+                    footerLogoModal.style.display = 'flex';
+                }
+            };
+            reader.readAsDataURL(file);
+            this.value = '';
+        });
+    }
 
     coverInput.addEventListener('change', function () {
         var file = this.files && this.files[0];
@@ -800,12 +1144,21 @@
         btn.addEventListener('click', function () {
             var type = this.getAttribute('data-crop');
             if (type === 'logo' && pendingLogoDataUrl) {
-                logoData.value = pendingLogoDataUrl;
-                logoPreview.src = pendingLogoDataUrl;
-                logoPreview.style.display = '';
+                if (logoData) logoData.value = pendingLogoDataUrl;
+                if (logoPreview) {
+                    logoPreview.src = pendingLogoDataUrl;
+                    logoPreview.style.display = '';
+                }
                 if (logoPlaceholder) logoPlaceholder.style.display = 'none';
-                document.getElementById('remove_logo').checked = false;
                 closeCropModal('crop-modal-logo');
+            } else if (type === 'footer_logo' && pendingFooterLogoDataUrl) {
+                footerLogoData.value = pendingFooterLogoDataUrl;
+                if (footerLogoPreview) {
+                    footerLogoPreview.src = pendingFooterLogoDataUrl;
+                    footerLogoPreview.style.display = '';
+                }
+                if (footerLogoPlaceholder) footerLogoPlaceholder.style.display = 'none';
+                closeCropModal('crop-modal-footer-logo');
             } else if (type === 'cover' && pendingCoverDataUrl) {
                 coverData.value = pendingCoverDataUrl;
                 coverPreview.src = pendingCoverDataUrl;
@@ -815,7 +1168,7 @@
                 closeCropModal('crop-modal-cover');
             } else {
                 // Nothing pending; just close the modal
-                closeCropModal(type === 'logo' ? 'crop-modal-logo' : 'crop-modal-cover');
+                closeCropModal(type === 'logo' ? 'crop-modal-logo' : type === 'footer_logo' ? 'crop-modal-footer-logo' : 'crop-modal-cover');
             }
 
             // Auto-save immediately after applying so user doesn't need to click "Save changes"
@@ -832,12 +1185,14 @@
         });
     });
 
-    logoModal.querySelector('.crop-modal-backdrop').addEventListener('click', function () { closeCropModal('crop-modal-logo'); });
+    if (logoModal) {
+        logoModal.querySelector('.crop-modal-backdrop').addEventListener('click', function () { closeCropModal('crop-modal-logo'); });
+    }
+    if (footerLogoModal) {
+        footerLogoModal.querySelector('.crop-modal-backdrop').addEventListener('click', function () { closeCropModal('crop-modal-footer-logo'); });
+    }
     coverModal.querySelector('.crop-modal-backdrop').addEventListener('click', function () { closeCropModal('crop-modal-cover'); });
 
-    document.getElementById('remove_logo').addEventListener('change', function () {
-        if (this.checked) { logoData.value = ''; if (logoPreview) { logoPreview.src = ''; logoPreview.style.display = 'none'; } if (logoPlaceholder) logoPlaceholder.style.display = ''; }
-    });
     document.getElementById('remove_cover').addEventListener('change', function () {
         if (this.checked) { coverData.value = ''; if (coverPreview) { coverPreview.src = ''; coverPreview.style.display = 'none'; } if (coverPlaceholder) coverPlaceholder.style.display = ''; }
     });
@@ -855,7 +1210,7 @@
     }
 
     var logoTarget = document.getElementById('preview-logo');
-    if (logoTarget) {
+    if (logoTarget && document.getElementById('logo')) {
         logoTarget.addEventListener('click', function () { focusField('logo', true); });
     }
 
@@ -953,6 +1308,40 @@
             // Auto-save immediately when theme changes
             if (schoolPageForm) {
                 schoolPageForm.submit();
+            }
+        });
+    }
+
+    // Public preview modal (iframe)
+    var previewBtn = document.getElementById('open-public-preview');
+    var publicPreviewModal = document.getElementById('public-preview-modal');
+    var publicPreviewIframe = document.getElementById('public-preview-iframe');
+    var publicPreviewUrl = @json(url('/schools/' . $school->school_code . '/enroll'));
+
+    function openPublicPreview() {
+        if (!publicPreviewModal) return;
+        publicPreviewModal.setAttribute('aria-hidden', 'false');
+        publicPreviewModal.style.display = 'flex';
+        if (publicPreviewIframe) {
+            // Always set src (iframe.src may be non-empty even when attribute is empty)
+            publicPreviewIframe.src = publicPreviewUrl + (publicPreviewUrl.indexOf('?') === -1 ? '?' : '&') + '_preview_ts=' + Date.now();
+        }
+    }
+
+    function closePublicPreview() {
+        if (!publicPreviewModal) return;
+        publicPreviewModal.setAttribute('aria-hidden', 'true');
+        publicPreviewModal.style.display = 'none';
+    }
+
+    if (previewBtn) previewBtn.addEventListener('click', openPublicPreview);
+    if (publicPreviewModal) {
+        publicPreviewModal.querySelectorAll('[data-dismiss=\"public-preview-modal\"]').forEach(function (el) {
+            el.addEventListener('click', closePublicPreview);
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && publicPreviewModal.getAttribute('aria-hidden') === 'false') {
+                closePublicPreview();
             }
         });
     }

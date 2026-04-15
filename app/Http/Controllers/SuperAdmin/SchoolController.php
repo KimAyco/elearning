@@ -21,7 +21,10 @@ class SchoolController extends Controller
     ) {
     }
 
-    public function index(Request $request): JsonResponse|View
+    /**
+     * @return array{schools: \Illuminate\Support\Collection, pendingRegistrations: \Illuminate\Support\Collection, paymentPlans: \Illuminate\Support\Collection, platformSettings: object|null}
+     */
+    private function superAdminPayload(): array
     {
         $schools = School::query()
             ->orderBy('name')
@@ -61,29 +64,119 @@ class SchoolController extends Controller
             ->select(['id', 'price_per_month', 'auto_approve_after_payment'])
             ->first();
 
-        if (! $request->expectsJson()) {
-            return view('superadmin.schools', [
-                'schools' => $schools,
-                'pendingRegistrations' => $pendingRegistrations,
-                'paymentPlans' => $paymentPlans,
-                'platformSettings' => $platformSettings,
-            ]);
-        }
+        return [
+            'schools' => $schools,
+            'pendingRegistrations' => $pendingRegistrations,
+            'paymentPlans' => $paymentPlans,
+            'platformSettings' => $platformSettings,
+        ];
+    }
+
+    private function jsonIndexResponse(): JsonResponse
+    {
+        $p = $this->superAdminPayload();
 
         return response()->json([
             'data' => [
-                'schools' => $schools,
-                'pending_registrations' => $pendingRegistrations,
-                'payment_plans' => $paymentPlans,
-                'platform_settings' => $platformSettings,
+                'schools' => $p['schools'],
+                'pending_registrations' => $p['pendingRegistrations'],
+                'payment_plans' => $p['paymentPlans'],
+                'platform_settings' => $p['platformSettings'],
             ],
         ]);
+    }
+
+    public function dashboard(Request $request): View
+    {
+        return view('superadmin.dashboard', array_merge(
+            $this->superAdminPayload(),
+            $this->dashboardAnalytics(),
+            ['activeNav' => 'dashboard']
+        ));
+    }
+
+    /**
+     * @return array{chartSubscriptionLabels: list<string>, chartSubscriptionData: list<int>, chartMonthlyLabels: list<string>, chartMonthlyData: list<int>}
+     */
+    private function dashboardAnalytics(): array
+    {
+        $schools = School::query()->get(['subscription_state', 'created_at']);
+
+        $stateLabels = [
+            'trial' => 'Trial',
+            'active' => 'Active billing',
+            'past_due' => 'Past due',
+            'expired' => 'Expired',
+            'cancelled' => 'Cancelled',
+        ];
+        $stateOrder = ['trial', 'active', 'past_due', 'expired', 'cancelled'];
+
+        $subLabels = [];
+        $subData = [];
+        foreach ($stateOrder as $state) {
+            $n = $schools->where('subscription_state', $state)->count();
+            if ($n > 0) {
+                $subLabels[] = $stateLabels[$state] ?? $state;
+                $subData[] = $n;
+            }
+        }
+        if ($subLabels === []) {
+            $subLabels = ['No tenants yet'];
+            $subData = [0];
+        }
+
+        $byMonth = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $d = now()->subMonths($i)->startOfMonth();
+            $byMonth[$d->format('Y-m')] = ['label' => $d->format('M'), 'count' => 0];
+        }
+        foreach ($schools as $s) {
+            $key = $s->created_at->format('Y-m');
+            if (isset($byMonth[$key])) {
+                $byMonth[$key]['count']++;
+            }
+        }
+
+        return [
+            'chartSubscriptionLabels' => $subLabels,
+            'chartSubscriptionData' => $subData,
+            'chartMonthlyLabels' => array_column($byMonth, 'label'),
+            'chartMonthlyData' => array_column($byMonth, 'count'),
+        ];
+    }
+
+    public function schools(Request $request): JsonResponse|View
+    {
+        if ($request->expectsJson()) {
+            return $this->jsonIndexResponse();
+        }
+
+        return view('superadmin.schools', array_merge(
+            $this->superAdminPayload(),
+            ['activeNav' => 'schools']
+        ));
+    }
+
+    public function pricing(Request $request): View
+    {
+        return view('superadmin.pricing', array_merge(
+            $this->superAdminPayload(),
+            ['activeNav' => 'pricing']
+        ));
+    }
+
+    public function approvals(Request $request): View
+    {
+        return view('superadmin.approvals', array_merge(
+            $this->superAdminPayload(),
+            ['activeNav' => 'approvals']
+        ));
     }
 
     public function store(Request $request): JsonResponse|RedirectResponse
     {
         if (! $request->expectsJson()) {
-            return redirect('/superadmin/schools')->withErrors([
+            return redirect()->route('superadmin.schools')->withErrors([
                 'school' => 'Manual school creation is disabled. Schools must register, subscribe, and pay before approval.',
             ]);
         }
@@ -121,7 +214,7 @@ class SchoolController extends Controller
         );
 
         if (! $request->expectsJson()) {
-            return redirect('/superadmin/schools')->with('status', 'School status updated.');
+            return redirect()->route('superadmin.schools')->with('status', 'School status updated.');
         }
 
         return response()->json([
@@ -146,12 +239,12 @@ class SchoolController extends Controller
     public function approveRegistration(Request $request, SchoolRegistration $registration): RedirectResponse
     {
         if ($registration->status !== 'paid') {
-            return redirect('/superadmin/schools')->withErrors(['registration' => 'Only paid registrations can be approved.']);
+            return redirect()->route('superadmin.approvals')->withErrors(['registration' => 'Only paid registrations can be approved.']);
         }
 
         $schoolCode = $this->provisioningService->provision($registration);
         if ($schoolCode === null) {
-            return redirect('/superadmin/schools')->withErrors(['registration' => 'Unable to provision school/admin account from registration data.']);
+            return redirect()->route('superadmin.approvals')->withErrors(['registration' => 'Unable to provision school/admin account from registration data.']);
         }
 
         $registration->status = 'approved';
@@ -169,7 +262,7 @@ class SchoolController extends Controller
             actorSuperAdminId: $request->session()->get('super_admin_id'),
         );
 
-        return redirect('/superadmin/schools')->with('status', 'Registration approved. School code: ' . $schoolCode);
+        return redirect()->route('superadmin.approvals')->with('status', 'Registration approved. School code: '.$schoolCode);
     }
 
     public function updatePlatformPricing(Request $request): RedirectResponse
@@ -195,7 +288,7 @@ class SchoolController extends Controller
                 ]);
         }
 
-        return redirect('/superadmin/schools')->with('status', 'Default monthly price updated.');
+        return redirect()->route('superadmin.pricing')->with('status', 'Default monthly price updated.');
     }
 
     public function upsertPaymentPlan(Request $request): RedirectResponse
@@ -222,15 +315,15 @@ class SchoolController extends Controller
                     'updated_at' => now(),
                 ]);
 
-            return redirect('/superadmin/schools')->with('status', 'Payment plan updated.');
+            return redirect()->route('superadmin.pricing')->with('status', 'Payment plan updated.');
         }
 
         $duplicateMonths = DB::table('payment_plans')
             ->where('months', (int) $payload['months'])
             ->exists();
         if ($duplicateMonths) {
-            return redirect('/superadmin/schools')->withErrors([
-                'plan' => 'A plan for ' . (int) $payload['months'] . ' month(s) already exists. Edit the existing plan instead.',
+            return redirect()->route('superadmin.pricing')->withErrors([
+                'plan' => 'A plan for '.(int) $payload['months'].' month(s) already exists. Edit the existing plan instead.',
             ]);
         }
 
@@ -243,6 +336,6 @@ class SchoolController extends Controller
             'updated_at' => now(),
         ]);
 
-        return redirect('/superadmin/schools')->with('status', 'Payment plan added.');
+        return redirect()->route('superadmin.pricing')->with('status', 'Payment plan added.');
     }
 }

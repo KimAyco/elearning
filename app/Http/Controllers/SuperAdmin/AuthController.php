@@ -44,6 +44,10 @@ class AuthController extends Controller
         $admin->last_login_at = now();
         $admin->save();
 
+        if ($request->boolean('remember')) {
+            config(['session.lifetime' => 30 * 24 * 60]);
+        }
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         $request->session()->regenerate();
@@ -56,7 +60,7 @@ class AuthController extends Controller
             actorSuperAdminId: (int) $admin->id,
         );
 
-        return redirect('/superadmin/schools');
+        return redirect()->route('superadmin.dashboard');
     }
 
     public function logout(Request $request): RedirectResponse

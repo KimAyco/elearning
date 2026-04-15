@@ -1,65 +1,72 @@
 @extends('layouts.app')
 
-@section('title', 'EduPlatform â€” Registered Schools')
+@section('title', 'EduPlatform - Registered Schools')
 
 @section('content')
-<div class="schools-page">
+<div class="lp-page">
+    <header class="lp-nav">
+        <div class="lp-container lp-nav-inner">
+            <a class="lp-brand" href="{{ url('/') }}" aria-label="EduPlatform Home">
+                <img class="lp-brand-logo" src="{{ asset('images/logo.png') }}" alt="EduPlatform logo">
+                <span class="lp-brand-text">EDUPLATFORM</span>
+            </a>
 
-    {{-- Top banner: diagonal two-tone layout (white left, dark right) --}}
-    <header class="schools-nav">
-        <div class="schools-nav-left"></div>
-        <div class="schools-nav-right"></div>
-        {{-- Diagonal gradient stripes --}}
-        <div class="schools-nav-stripe schools-nav-stripe-1" aria-hidden="true"></div>
-        <div class="schools-nav-stripe schools-nav-stripe-2" aria-hidden="true"></div>
-        <div class="schools-nav-stripe schools-nav-stripe-3" aria-hidden="true"></div>
-        <div class="schools-nav-stripe schools-nav-stripe-4" aria-hidden="true"></div>
-        <div class="schools-nav-stripe schools-nav-stripe-5" aria-hidden="true"></div>
-        <div class="schools-nav-inner">
-            <div class="schools-nav-section schools-nav-section-left">
-                <div class="schools-brand">
-                    <span class="schools-logo" aria-hidden="true">E</span>
-                    <div class="schools-brand-text">
-                        <h1 class="schools-brand-name">EduPlatform</h1>
-                    </div>
-                </div>
-            </div>
-            <div class="schools-nav-section schools-nav-section-right">
-                <div class="schools-nav-right-headline">
-                    <span class="schools-nav-right-line1">Find your</span>
-                    <span class="schools-nav-right-line2">School</span>
-                </div>
-                <span class="schools-nav-right-tagline">Register or sign in to continue</span>
-                <div class="schools-nav-actions">
-                    <a href="{{ route('register.school.form') }}" class="btn btn-nav secondary sm">Register school</a>
-                    <a href="{{ url('/login') }}" class="btn btn-nav primary sm">Sign in</a>
-                </div>
-            </div>
+            <nav class="lp-links" aria-label="Primary navigation">
+                <a class="lp-link" href="{{ url('/') }}">Home</a>
+                <a class="lp-link" href="#services">Services</a>
+                <a class="lp-link" href="#about">About</a>
+                <a class="lp-link" href="#contact">Contact</a>
+                <a class="lp-link" href="#faq">FAQ</a>
+            </nav>
         </div>
     </header>
 
-    <main class="schools-main">
+    <section class="lp-hero" aria-label="EduPlatform hero">
+        <div class="lp-hero-bg-right" aria-hidden="true">
+                    </div>
+        <div class="lp-container lp-hero-inner">
+            <div class="lp-hero-left">
+                <h1 class="lp-hero-title">
+                    <span class="lp-hero-edu">EDU</span>
+                    <span class="lp-hero-platform">PLATFORM</span>
+                </h1>
+
+                <div class="lp-hero-subtitle">Your way to knowledge</div>
+
+                <p class="lp-hero-description">
+                    Learn faster with a modern school platform built for students, teachers, and administrators.
+                </p>
+
+                <div class="lp-hero-continue">REGISTER OR SIGN IN TO CONTINUE</div>
+
+                <div class="lp-hero-actions">
+                    <a href="{{ route('register.school.form') }}" class="lp-btn lp-btn-primary">Register school</a>
+                    <a href="{{ url('/login') }}" class="lp-btn lp-btn-secondary">Sign in</a>
+                </div>
+            </div>
+
+            <div class="lp-hero-right" aria-hidden="true">
+                <img class="lp-hero-image" src="{{ asset('images/model.png') }}" alt="">
+            </div>
+        </div>
+    </section>
+
+    <main class="lp-main lp-container">
         @if (session('status'))
-            <div class="alert success schools-alert">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 6L9 17l-5-5"></path>
-                </svg>
+            <div class="lp-alert lp-alert--success">
                 <span>{{ session('status') }}</span>
             </div>
         @endif
+
         @if (session('error'))
-            <div class="alert error schools-alert">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
+            <div class="lp-alert lp-alert--error">
                 <span>{{ session('error') }}</span>
             </div>
         @endif
 
-        {{-- Search & filter (visual only) --}}
-        <section class="schools-controls">
-            <div class="schools-search">
-                <span class="search-icon" aria-hidden="true">
+        <section class="lp-controls" aria-label="School search and filter">
+            <div class="lp-search">
+                <span class="lp-search-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="11" cy="11" r="6"></circle>
                         <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
@@ -69,124 +76,83 @@
                     type="text"
                     name="q"
                     placeholder="Search by name or city..."
-                    class="search-input"
+                    class="lp-search-input"
                 >
             </div>
-            <div class="schools-filters">
-                <span class="filters-label">Filter by type</span>
-                <div class="filters-chips">
-                    <button type="button" class="filter-chip filter-chip--active">All</button>
-                    <button type="button" class="filter-chip">Private</button>
-                    <button type="button" class="filter-chip">Public</button>
-                    <button type="button" class="filter-chip">Charter</button>
-                    <button type="button" class="filter-chip">Vocational</button>
+
+            <div class="lp-filters">
+                <div class="lp-filters-label">Filter by type</div>
+                <div class="lp-chips" role="group" aria-label="School type filters">
+                    <button type="button" class="lp-chip lp-chip-active">All</button>
+                    <button type="button" class="lp-chip">Private</button>
+                    <button type="button" class="lp-chip">Public</button>
+                    <button type="button" class="lp-chip">Charter</button>
+                    <button type="button" class="lp-chip">Vocational</button>
                 </div>
             </div>
         </section>
 
-        @php
-            $placeholderImages = [
-                'https://images.unsplash.com/photo-1541339907198-e08756defe93?auto=format&fit=crop&q=80&w=800',
-                'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=800',
-                'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&q=80&w=800',
-                'https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&q=80&w=800',
-                'https://images.unsplash.com/photo-1519452635265-7b1fbfd1e4e0?auto=format&fit=crop&q=80&w=800',
-                'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=800',
-            ];
-            $placeholderTypes = ['Private', 'Public', 'Vocational', 'Private', 'Charter', 'Private'];
-            $placeholderLocations = [
-                'New York, NY',
-                'Chicago, IL',
-                'San Francisco, CA',
-                'Austin, TX',
-                'Seattle, WA',
-                'Boston, MA',
-            ];
-            $placeholderStudents = ['1,200', '2,500', '800', '350', '950', '1,100'];
-            $placeholderRatings = [4.8, 4.2, 4.5, 4.9, 4.6, 4.7];
-            $placeholderTags = [
-                ['STEM', 'Arts'],
-                ['Sports', 'Community'],
-                ['Engineering', 'Tech'],
-                ['Childhood', 'Creative'],
-                ['Robotics', 'Math'],
-                ['IB Program', 'Law'],
-            ];
+        <section class="lp-explore" aria-label="Explore schools">
+            <div class="lp-section-heading">
+                <h2>EXPLORE SCHOOLS</h2>
+            </div>
+
+            @php
             $fallbackImage = 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&q=80&w=800';
         @endphp
 
-        {{-- Schools grid --}}
-        <section class="schools-grid-section">
             @if ($schools->isEmpty())
-                <div class="schools-empty-card">
-                    <div class="empty-icon">
+                <div class="lp-empty">
+                    <div class="lp-empty-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                             <polyline points="9 22 9 12 15 12 15 22"/>
                         </svg>
                     </div>
-                    <h2>No schools yet</h2>
+                    <h3>No schools yet</h3>
                     <p>Once schools are registered on EduPlatform, you will see them listed here.</p>
                 </div>
             @else
-                <div class="schools-grid">
-                    @foreach ($schools as $index => $school)
-                        @php
-                            $metaIndex = $index % count($placeholderImages);
-                            $type = $placeholderTypes[$metaIndex] ?? 'School';
-                            $location = $placeholderLocations[$metaIndex] ?? 'City, Country';
+                <div class="lp-carousel">
+                    <button type="button" class="lp-carousel-arrow" data-carousel-prev aria-label="Previous schools">
+                        &#8249;
+                    </button>
+
+                    <div class="lp-carousel-track" data-carousel-track>
+                        @foreach ($schools as $school)
+                            @php
+                                $image = $school->cover_image_url ?: $fallbackImage;
+                                $location = trim((string) ($school->short_description ?? '')) !== ''
+                                    ? (string) $school->short_description
+                                    : 'City, Country';
                                     $studentCount = $school->enrolled_students_count ?? null;
-                                    $students = $studentCount && $studentCount > 0
-                                        ? number_format($studentCount)
-                                        : ($placeholderStudents[$metaIndex] ?? '—');
-                            $rating = $placeholderRatings[$metaIndex] ?? 4.5;
-                            $tags = $placeholderTags[$metaIndex] ?? [];
-                            $image = $school->cover_image_url ?: ($placeholderImages[$metaIndex] ?? $fallbackImage);
+                                $students = $studentCount && $studentCount > 0 ? number_format($studentCount) : '—';
                         @endphp
-                        <article class="school-card">
-                            <div class="school-card-image">
+
+                            <article class="lp-card lp-carousel-item">
+                                <div class="lp-card-image">
                                 <img
                                     src="{{ $image }}"
-                                    alt="Campus view for {{ $school->name }}"
+                                        alt="School cover for {{ $school->name }}"
                                     onerror="this.onerror=null;this.src='{{ $fallbackImage }}';"
                                 >
-                                <button type="button" class="school-favorite" aria-label="Save school">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                                    </svg>
-                                </button>
-                            </div>
-
-                            <div class="school-card-body">
-                                <div class="school-card-title-row">
-                                    @if ($school->logo_url)
-                                        <div class="school-card-logo">
-                                            <img src="{{ $school->logo_url }}" alt="" class="school-card-logo-img">
-                                        </div>
-                                    @else
-                                        <div class="school-card-logo school-card-logo--initial">
-                                            <span>{{ strtoupper(mb_substr($school->name, 0, 1)) }}</span>
-                                        </div>
-                                    @endif
-                                    <h2 class="school-name">{{ $school->name }}</h2>
                                 </div>
 
-                                @php
-                                    $address = trim((string) $school->short_description) !== '' ? $school->short_description : $location;
-                                @endphp
-                                <div class="school-rating-row">
-                                    <span class="meta-icon">
+                                <div class="lp-card-body">
+                                    <h3 class="lp-card-title">{{ $school->name }}</h3>
+
+                                    <div class="lp-card-row">
+                                        <span class="lp-meta-icon" aria-hidden="true">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                                             <path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1 1 18 0z"/>
                                             <circle cx="12" cy="10" r="3"/>
                                         </svg>
                                     </span>
-                                    <span class="meta-text">{{ $address }}</span>
+                                        <span class="lp-meta-text">{{ $location }}</span>
                                 </div>
 
-                                <div class="school-meta">
-                                    <div class="school-meta-row">
-                                        <span class="meta-icon">
+                                    <div class="lp-card-row">
+                                        <span class="lp-meta-icon" aria-hidden="true">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                                                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                                                 <circle cx="9" cy="7" r="4"/>
@@ -194,724 +160,604 @@
                                                 <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                                             </svg>
                                         </span>
-                                        <span class="meta-text">{{ $students }} students enrolled</span>
+                                        <span class="lp-meta-text">{{ $students }} students enrolled</span>
                                     </div>
-                                </div>
-
-                                @if (!empty($tags))
-                                    <div class="school-tags">
-                                        @foreach ($tags as $tag)
-                                            <span class="tag-pill">{{ $tag }}</span>
-                                        @endforeach
-                                    </div>
-                                @endif
 
                                 <a
+                                        class="lp-card-cta"
                                     href="{{ route('school.enroll', ['school_code' => $school->school_code]) }}"
-                                    class="school-primary-action"
                                 >
-                                    Go to school space
+                                        Go to school page
                                 </a>
                             </div>
                         </article>
                     @endforeach
+                    </div>
+
+                    <button type="button" class="lp-carousel-arrow" data-carousel-next aria-label="Next schools">
+                        &#8250;
+                    </button>
                 </div>
             @endif
         </section>
     </main>
 
-    <footer class="schools-footer">
+    <footer class="lp-footer">
+        <div class="lp-container">
         <p>© {{ date('Y') }} EduPlatform</p>
+        </div>
     </footer>
 </div>
 
 <style>
-.schools-page {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: #f3f4f6;
-}
-
-/* ——— Banner: diagonal two-tone (white left, dark right) + stripes ——— */
-.schools-nav {
-    position: relative;
-    min-height: 140px;
-    overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-}
-
-/* Left (white) and right (dark) background panels with diagonal split */
-.schools-nav-left,
-.schools-nav-right {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-}
-
-.schools-nav-left {
-    background: #ffffff;
-    clip-path: polygon(0 0, 52% 0, 0 100%);
-    z-index: 0;
-}
-
-.schools-nav-right {
-    background: #0f172a;
-    clip-path: polygon(52% 0, 100% 0, 100% 100%, 0 100%);
-    z-index: 0;
-}
-
-/* Diagonal gradient stripes (blue → teal) */
-.schools-nav-stripe {
-    position: absolute;
-    z-index: 1;
-    pointer-events: none;
-    opacity: 0.9;
-    background: linear-gradient(135deg, #3b82f6 0%, #0ea5e9 50%, #14b8a6 100%);
-}
-
-.schools-nav-stripe-1 {
-    top: -20%;
-    right: 5%;
-    width: 28%;
-    height: 140%;
-    transform: rotate(-25deg);
-}
-
-.schools-nav-stripe-2 {
-    top: -10%;
-    right: 25%;
-    width: 18%;
-    height: 120%;
-    transform: rotate(-22deg);
-    opacity: 0.7;
-}
-
-.schools-nav-stripe-3 {
-    bottom: -30%;
-    left: 15%;
-    width: 22%;
-    height: 100%;
-    transform: rotate(-20deg);
-    opacity: 0.6;
-}
-
-.schools-nav-stripe-4 {
-    top: 0;
-    right: 0;
-    width: 35%;
-    height: 100%;
-    transform: rotate(-18deg);
-    opacity: 0.5;
-}
-
-.schools-nav-stripe-5 {
-    bottom: -20%;
-    right: 35%;
-    width: 15%;
-    height: 90%;
-    transform: rotate(-28deg);
-    opacity: 0.55;
-}
-
-.schools-nav-inner {
-    position: relative;
-    z-index: 2;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 24px 28px 28px;
-    min-height: 140px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 32px;
-}
-
-.schools-nav-section {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.schools-nav-section-left {
-    max-width: 420px;
-}
-
-/* Left: brand (blue heading) + sublabel (grey) + description */
-.schools-brand {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-}
-
-.schools-brand-text {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.schools-logo {
-    width: 52px;
-    height: 52px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #fff;
-    background: linear-gradient(135deg, #3b82f6, #0ea5e9);
-    flex-shrink: 0;
-}
-
-.schools-brand-name {
-    margin: 0;
-    font-weight: 700;
-    font-size: 1.5rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: #2563eb;
-}
-
-/* Right: white + yellow headline, tagline, buttons */
-.schools-nav-section-right {
-    align-items: flex-end;
-    text-align: right;
-}
-
-.schools-nav-right-headline {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    line-height: 1.1;
-}
-
-.schools-nav-right-line1 {
-    font-weight: 700;
-    font-size: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: #f8fafc;
-}
-
-.schools-nav-right-line2 {
-    font-weight: 700;
-    font-size: 1.25rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: #facc15;
-}
-
-.schools-nav-right-tagline {
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #e2e8f0;
-}
-
-.schools-nav-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.btn-nav {
-    padding: 10px 18px;
-    font-weight: 600;
-    font-size: 0.875rem;
-    border-radius: 8px;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.btn-nav.secondary {
-    background: rgba(255, 255, 255, 0.15);
-    color: #e2e8f0;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-}
-
-.btn-nav.secondary:hover {
-    background: rgba(255, 255, 255, 0.25);
-    color: #fff;
-}
-
-.btn-nav.primary {
-    background: linear-gradient(135deg, #3b82f6, #0ea5e9);
-    color: #fff;
-    border: none;
-    box-shadow: 0 2px 10px rgba(59, 130, 246, 0.4);
-}
-
-.btn-nav.primary:hover {
-    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.5);
-    transform: translateY(-1px);
-}
-
-.schools-main {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 32px 20px 40px;
-    flex: 1;
-}
-
-.schools-alert {
-    max-width: 720px;
-    margin: 0 auto 16px;
-}
-
-.schools-intro {
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.schools-intro h1 {
-    margin: 0 0 6px;
-    font-size: 1.9rem;
-    font-weight: 800;
-    color: #0f172a;
-}
-
-.schools-intro p {
-    margin: 0 0 10px;
-    font-size: 0.98rem;
-    color: #6b7280;
-}
-
-.schools-count {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: 0.78rem;
-    color: #374151;
-    background: #e5f0ff;
-}
-
-.schools-controls {
-    margin: 24px 0 20px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.schools-search {
-    position: relative;
-    flex: 1 1 260px;
-    max-width: 380px;
-}
-
-.search-icon {
-    position: absolute;
-    inset-block: 0;
-    left: 12px;
-    display: flex;
-    align-items: center;
-    color: #9ca3af;
-}
-
-.search-icon svg {
-    width: 18px;
-    height: 18px;
-}
-
-.search-input {
-    width: 100%;
-    padding: 10px 12px 10px 36px;
-    border-radius: 999px;
-    border: 1px solid #e5e7eb;
-    background: #ffffff;
-    font-size: 0.9rem;
-    color: #111827;
-    outline: none;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.search-input::placeholder {
-    color: #9ca3af;
-}
-
-.search-input:focus {
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.12);
-}
-
-.schools-filters {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 8px;
-}
-
-.filters-label {
-    font-size: 0.8rem;
-    color: #6b7280;
-}
-
-.filters-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-.filter-chip {
-    border-radius: 999px;
-    border: 1px solid #e5e7eb;
-    background: #ffffff;
-    padding: 6px 12px;
-    font-size: 0.78rem;
-    font-weight: 500;
-    color: #4b5563;
-    cursor: default;
-    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-}
-
-.filter-chip--active {
-    background: #4f46e5;
-    border-color: #4f46e5;
-    color: #ffffff;
-    box-shadow: 0 8px 18px rgba(79, 70, 229, 0.25);
-}
-
-.schools-grid-section {
-    margin-top: 8px;
-}
-
-.schools-empty-card {
-    border-radius: 18px;
-    border: 1px dashed #e5e7eb;
-    background: #ffffff;
-    padding: 40px 16px;
-    text-align: center;
-}
-
-.empty-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 52px;
-    height: 52px;
-    border-radius: 999px;
-    background: #f3f4ff;
-    color: #9ca3af;
-    margin-bottom: 10px;
-}
-
-.empty-icon svg {
-    width: 26px;
-    height: 26px;
-}
-
-.schools-empty-card h2 {
-    margin: 0 0 4px;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #111827;
-}
-
-.schools-empty-card p {
-    margin: 0;
-    font-size: 0.9rem;
-    color: #6b7280;
-}
-
-.schools-grid {
-    display: grid;
-    grid-template-columns: repeat(1, minmax(0, 1fr));
-    gap: 18px;
-}
-
-@media (min-width: 640px) {
-    .schools-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-@media (min-width: 1024px) {
-    .schools-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-}
-
-.school-card {
-    background: #ffffff;
-    border-radius: 20px;
-    overflow: hidden;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
-    display: flex;
-    flex-direction: column;
-    transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
-}
-
-.school-card:hover {
-    border-color: #4f46e5;
-    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
-    transform: translateY(-2px);
-}
-
-.school-card-image {
-    position: relative;
-    height: 180px;
-    overflow: hidden;
-}
-
-.school-card-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
-}
-
-.school-card:hover .school-card-image img {
-    transform: scale(1.06);
-}
-
-.school-type-pill {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-}
-
-.school-type-pill span {
-    display: inline-flex;
-    align-items: center;
-    padding: 3px 10px;
-    border-radius: 999px;
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    background: #ffffffdd;
-    color: #4f46e5;
-    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
-}
-
-.school-favorite {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 30px;
-    height: 30px;
-    border-radius: 999px;
-    border: none;
-    background: #ffffffdd;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    color: #9ca3af;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
-}
-
-.school-favorite svg {
-    width: 14px;
-    height: 14px;
-}
-
-.school-card-body {
-    padding: 14px 14px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.school-rating-row {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    margin-bottom: 2px;
-}
-
-.star-icon {
-    width: 13px;
-    height: 13px;
-}
-
-.star-icon--filled {
-    fill: #fbbf24;
-    stroke: #fbbf24;
-}
-
-.star-icon--empty {
-    stroke: #d1d5db;
-    fill: transparent;
-}
-
-.rating-number {
-    margin-left: 4px;
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: #6b7280;
-}
-
-.school-card-title-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 4px;
-}
-
-.school-card-logo {
-    width: 44px;
-    height: 44px;
-    border-radius: 999px;
-    overflow: hidden;
-    flex-shrink: 0;
-    background: #111827;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.25);
-}
-
-.school-card-logo-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-.school-card-logo--initial span {
-    color: #ffffff;
-    font-size: 0.9rem;
-    font-weight: 700;
-}
-
-.school-name {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 700;
-    color: #111827;
-}
-
-.school-meta {
-    margin-top: 4px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.school-meta-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.82rem;
-    color: #6b7280;
-}
-
-.meta-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 16px;
-    height: 16px;
-    color: #9ca3af;
-}
-
-.meta-icon svg {
-    width: 14px;
-    height: 14px;
-}
-
-.meta-text {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.school-tags {
-    margin-top: 6px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-}
-
-.tag-pill {
-    padding: 3px 8px;
-    border-radius: 999px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    background: #f3f4f6;
-    color: #6b7280;
-}
-
-.school-primary-action {
-    margin-top: 10px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    padding: 9px 12px;
-    border-radius: 999px;
-    background: #0f172a;
-    color: #ffffff;
-    font-size: 0.85rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
-}
-
-.school-primary-action:hover {
-    background: #4f46e5;
-    box-shadow: 0 10px 22px rgba(79, 70, 229, 0.4);
-    transform: translateY(-1px);
-}
-
-.schools-footer {
-    border-top: 1px solid #e5e7eb;
-    background: #ffffff;
-    padding: 18px 20px 22px;
-    text-align: center;
-    font-size: 0.8rem;
-    color: #9ca3af;
-}
-
-@media (max-width: 640px) {
-    .schools-nav {
-        min-height: auto;
+    :root{
+        --green:#22c55e;
+        --green-2:#1e9e49;
+        --ink:#0f172a;
+        --muted:#6b7280;
+        --bg:#f7faf8;
+        --surface:#ffffff;
+        --border:rgba(15, 23, 42, 0.10);
+        --shadow:0 18px 55px rgba(2, 6, 23, 0.10);
+        --shadow-soft:0 10px 28px rgba(2, 6, 23, 0.08);
+        --radius:16px;
     }
 
-    .schools-nav-inner {
-        flex-direction: column;
-        align-items: stretch;
-        padding: 20px 16px;
-        min-height: auto;
+    *{ box-sizing:border-box; }
+    body{
+        margin:0;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        color:var(--ink);
+        background:var(--bg);
+        -webkit-font-smoothing:antialiased;
+        -moz-osx-font-smoothing:grayscale;
     }
 
-    .schools-nav-section-left {
-        max-width: none;
+    .lp-page{ min-height:100vh; }
+
+    .lp-container{
+        max-width:1100px;
+        margin:0 auto;
+        padding:0 20px;
     }
 
-    .schools-nav-section-right {
-        align-items: flex-start;
-        text-align: left;
+    /* Navbar */
+    .lp-nav{
+        position:sticky;
+        top:0;
+        z-index:1000;
+        background:var(--surface);
+        box-shadow:0 6px 22px rgba(2, 6, 23, 0.06);
+    }
+    .lp-nav-inner{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:16px;
+        padding:12px 0;
+    }
+    .lp-brand{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        text-decoration:none;
+        color:#2e2e2e; /* match EDU color and prevent default link blue */
+    }
+    .lp-brand:hover,
+    .lp-brand:focus,
+    .lp-brand:active{
+        text-decoration:none;
+        color:#2e2e2e;
+    }
+    .lp-brand-logo{
+        width:44px;
+        height:44px;
+        object-fit:contain;
+    }
+    .lp-brand-text{
+        font-weight:900;
+        letter-spacing:0.06em;
+        font-size:1.15rem;
+        color:inherit;
+    }
+    .lp-links{
+        display:flex;
+        align-items:center;
+        gap:22px;
+        flex-wrap:wrap;
+        justify-content:flex-end;
+    }
+    .lp-link{
+        text-decoration:none;
+        color:rgba(15, 23, 42, 0.85);
+        font-weight:700;
+        font-size:0.85rem;
+        text-transform:uppercase;
+        letter-spacing:0.02em;
+    }
+    .lp-link:hover{
+        color:var(--green);
+        text-decoration:underline;
+        text-underline-offset:4px;
     }
 
-    .schools-nav-actions {
-        flex-wrap: wrap;
+    /* Hero */
+    .lp-hero{
+        position:relative;
+        overflow:hidden;
+        padding:56px 0 46px;
+        background:linear-gradient(180deg, rgba(34,197,94,0.06) 0%, rgba(34,197,94,0.00) 60%);
+    }
+    .lp-hero::before{
+        content:'';
+        position:absolute;
+        left:-240px;
+        bottom:-380px;
+        width:760px;
+        height:760px;
+        background:rgba(34,197,94,0.18);
+        border-radius:55% 45% 40% 60% / 45% 55% 45% 55%;
+        z-index:0;
+    }
+    .lp-hero-bg-right{
+        position:absolute;
+        inset:0;
+        z-index:0;
+        overflow:hidden;
+        pointer-events:none;
+    }
+    .lp-hero-bg-right::before{
+        content:'';
+        position:absolute;
+        right:-150px;
+        top:-210px;
+        width:700px;
+        height:660px;
+        background:linear-gradient(135deg, #6cc840 0%, #56b61f 100%);
+        border-radius:58% 42% 43% 57% / 56% 43% 57% 44%;
+        transform:rotate(5deg);
+        box-shadow:-18px 20px 0 rgba(15,23,42,0.07);
+    }
+    .lp-hero-inner{
+        position:relative;
+        z-index:1;
+        display:flex;
+        align-items:stretch;          /* allow columns to align to bottom */
+        justify-content:space-between;
+        gap:24px;
+    }
+    .lp-hero-left{
+        max-width:520px;
+        margin-top:58px; /* move hero text block toward vertical center */
+    }
+    .lp-hero-title{
+        margin:0 0 10px;
+        font-size:3.6rem;
+        line-height:1;
+        font-weight:1000;
+        letter-spacing:0.01em;
+        display:flex;
+        flex-direction:column; /* EDU on top of PLATFORM */
+        gap:2px;
+    }
+    .lp-hero-edu{ color:#2e2e2e; }
+    .lp-hero-platform{ color:#58ad07; }
+    .lp-hero-subtitle{
+        font-weight:900;
+        letter-spacing:0.04em;
+        color:var(--green);
+        margin-bottom:12px;
+        text-transform:none;
+        font-size:1.05rem;
+    }
+    .lp-hero-description{
+        margin:0 0 20px;
+        color:rgba(15, 23, 42, 0.72);
+        font-size:1.08rem;
+        max-width:460px;
+        line-height:1.6;
+    }
+    .lp-hero-continue{
+        margin:4px 0 14px;
+        font-weight:900;
+        letter-spacing:0.05em;
+        text-transform:uppercase;
+        font-size:0.85rem;
+        color:#329200;
+    }
+    .lp-hero-actions{
+        display:flex;
+        align-items:center;
+        gap:12px;
+        flex-wrap:wrap;
     }
 
-    .schools-main {
-        padding-inline: 16px;
-        padding-top: 24px;
+    .lp-btn{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        gap:8px;
+        padding:11px 20px;
+        border-radius:999px;
+        font-weight:800;
+        font-size:0.95rem;
+        text-decoration:none;
+        border:1px solid transparent;
+        transition:transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+        white-space:nowrap;
+        text-decoration:none;
+    }
+    .lp-btn:hover,
+    .lp-btn:focus,
+    .lp-btn:active{
+        transform:translateY(-1px);
+        text-decoration:none;
+    }
+    .lp-btn-primary{
+        background:var(--green);
+        color:#fff;
+        border-color:rgba(34,197,94,0.6);
+        box-shadow:0 12px 26px rgba(34,197,94,0.22);
+    }
+    .lp-btn-secondary{
+        background:#fff;
+        color:var(--green);
+        border-color:rgba(34,197,94,0.28);
+        box-shadow:0 10px 22px rgba(2,6,23,0.06);
+    }
+    .lp-btn-secondary:hover{
+        background:#f0fdf4;
+        border-color:rgba(34,197,94,0.45);
     }
 
-    .schools-controls {
-        align-items: stretch;
+    .lp-hero-right{
+        width:46%;
+        position:relative;           /* anchor only the model image */
+        min-height:440px;            /* match smaller model scale */
+        overflow:visible;
+        z-index:1;
+    }
+    .lp-hero-image{
+        width:500px;          /* smaller to match reference better */
+        max-width:none;       /* allow overflow to keep size */
+        height:auto;
+        display:block;
+        position:absolute;
+        right:-34px;          /* keep overlap on green shape */
+        bottom:-62px;         /* move model further downward */
+        transform:rotate(-0.5deg);
+        margin:0;
     }
 
-    .schools-filters {
-        justify-content: flex-start;
+    /* Main */
+    .lp-main{ padding:18px 0 48px; }
+
+    .lp-controls{
+        display:flex;
+        align-items:flex-end;
+        justify-content:space-between;
+        gap:18px;
+        margin-top:-8px;
+        flex-wrap:wrap;
+        padding-top:10px;
     }
+
+    .lp-search{
+        position:relative;
+        flex:1 1 320px;
+        max-width:420px;
+    }
+    .lp-search-icon{
+        position:absolute;
+        left:14px;
+        top:50%;
+        transform:translateY(-50%);
+        color:rgba(15, 23, 42, 0.4);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        pointer-events:none;
+    }
+    .lp-search-icon svg{ width:18px; height:18px; }
+    .lp-search-input{
+        width:100%;
+        padding:12px 16px 12px 44px;
+        border:1px solid rgba(15, 23, 42, 0.10);
+        border-radius:999px;
+        background:#fff;
+        outline:none;
+        box-shadow:0 10px 22px rgba(2,6,23,0.04);
+        transition:border-color 0.2s ease, box-shadow 0.2s ease;
+        font-size:0.92rem;
+    }
+    .lp-search-input:focus{
+        border-color:rgba(34,197,94,0.55);
+        box-shadow:0 0 0 4px rgba(34,197,94,0.15);
+    }
+
+    .lp-filters{ display:flex; align-items:center; gap:14px; }
+    .lp-filters-label{ font-weight:700; color:var(--muted); font-size:0.86rem; }
+    .lp-chips{ display:flex; gap:8px; flex-wrap:wrap; }
+    .lp-chip{
+        border-radius:999px;
+        border:1px solid rgba(15, 23, 42, 0.12);
+        background:#fff;
+        color:rgba(15, 23, 42, 0.65);
+        font-weight:700;
+        font-size:0.78rem;
+        padding:8px 14px;
+        cursor:default;
+        transition:background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    }
+    .lp-chip:hover{ transform:translateY(-1px); }
+    .lp-chip-active{
+        background:var(--green);
+        color:#fff;
+        border-color:rgba(34,197,94,0.7);
+        box-shadow:0 10px 26px rgba(34,197,94,0.22);
+    }
+
+    /* Explore */
+    .lp-section-heading{
+        margin:18px 0 14px;
+        text-align:center;
+    }
+    .lp-section-heading h2{
+        margin:0;
+        font-weight:1000;
+        font-size:1.05rem;
+        letter-spacing:0.05em;
+    }
+
+    .lp-carousel{
+        position:relative;
+        padding:8px 0;
+    }
+    .lp-carousel-track{
+        display:flex;
+        gap:18px;
+        overflow-x:auto;
+        scroll-snap-type:x mandatory;
+        padding:8px 52px;
+        scrollbar-width:none;
+    }
+    .lp-carousel-track::-webkit-scrollbar{ width:0; height:0; }
+
+    .lp-carousel-item{
+        flex:0 0 calc(33.333% - 12px);
+        scroll-snap-align:start;
+    }
+
+    .lp-carousel-arrow{
+        position:absolute;
+        top:50%;
+        transform:translateY(-50%);
+        width:42px;
+        height:42px;
+        border-radius:999px;
+        border:1px solid rgba(34,197,94,0.25);
+        background:#fff;
+        color:var(--green);
+        cursor:pointer;
+        box-shadow:0 10px 26px rgba(34,197,94,0.18);
+        transition:transform 0.2s ease, box-shadow 0.2s ease;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        z-index:2;
+        user-select:none;
+    }
+    .lp-carousel-arrow:hover{
+        transform:translateY(-50%) scale(1.03);
+        box-shadow:0 16px 40px rgba(34,197,94,0.25);
+    }
+    .lp-carousel-arrow[data-carousel-prev]{ left:0; }
+    .lp-carousel-arrow[data-carousel-next]{ right:0; }
+
+    /* Cards */
+    .lp-card{
+        background:#fff;
+        border:1px solid rgba(34,197,94,0.20);
+        border-radius:var(--radius);
+        overflow:hidden;
+        box-shadow:0 10px 28px rgba(2,6,23,0.06);
+        transition:transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        display:flex;
+        flex-direction:column;
+    }
+    .lp-card:hover{
+        transform:translateY(-3px);
+        border-color:rgba(34,197,94,0.65);
+        box-shadow:0 22px 60px rgba(2,6,23,0.12);
+    }
+    .lp-card-image{
+        height:170px;
+        background:#f1f5f9;
+        overflow:hidden;
+    }
+    .lp-card-image img{
+        width:100%;
+        height:100%;
+        object-fit:cover;
+        display:block;
+    }
+    .lp-card-body{
+        padding:16px 16px 18px;
+        display:flex;
+        flex-direction:column;
+        gap:12px;
+        flex:1;
+    }
+    .lp-card-title{
+        margin:0;
+        font-size:1.02rem;
+        font-weight:900;
+        color:var(--ink);
+        line-height:1.2;
+    }
+    .lp-card-row{
+        display:flex;
+        align-items:center;
+        gap:8px;
+        color:rgba(15, 23, 42, 0.68);
+        font-weight:600;
+        font-size:0.88rem;
+    }
+    .lp-meta-icon{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        width:18px;
+        height:18px;
+        color:rgba(34,197,94,0.9);
+    }
+    .lp-meta-icon svg{ width:16px; height:16px; }
+    .lp-meta-text{
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+    }
+    .lp-card-cta{
+        margin-top:auto;
+        width:100%;
+        text-align:center;
+        text-decoration:none;
+        padding:10px 14px;
+        border-radius:999px;
+        background:var(--green);
+        color:#fff;
+        font-weight:900;
+        font-size:0.9rem;
+        transition:transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        box-shadow:0 14px 30px rgba(34,197,94,0.22);
+    }
+    .lp-card-cta:hover{
+        transform:translateY(-1px);
+        background:var(--green-2);
+        box-shadow:0 18px 44px rgba(34,197,94,0.28);
+    }
+
+    /* Empty */
+    .lp-empty{
+        border-radius:20px;
+        border:1px dashed rgba(15, 23, 42, 0.15);
+        background:#fff;
+        padding:42px 16px;
+        text-align:center;
+    }
+    .lp-empty-icon{
+        width:56px;
+        height:56px;
+        border-radius:999px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:rgba(34,197,94,0.10);
+        color:rgba(15, 23, 42, 0.35);
+        margin:0 auto 12px;
+    }
+    .lp-empty-icon svg{ width:30px; height:30px; }
+    .lp-empty h3{ margin:0 0 6px; font-size:1rem; font-weight:900; }
+    .lp-empty p{ margin:0; color:var(--muted); }
+
+    /* Footer */
+    .lp-footer{
+        border-top:1px solid rgba(15, 23, 42, 0.08);
+        background:#fff;
+        padding:18px 0 24px;
+        color:rgba(15, 23, 42, 0.5);
+        font-size:0.88rem;
+    }
+    .lp-footer p{ margin:0; text-align:center; }
+
+    /* Alerts (simple, avoid frameworks) */
+    .lp-alert{
+        margin:18px auto 0;
+        max-width:720px;
+        padding:12px 14px;
+        border-radius:14px;
+        border:1px solid rgba(34,197,94,0.22);
+        background:rgba(34,197,94,0.08);
+        color:rgba(15, 23, 42, 0.85);
+        font-weight:700;
+    }
+    .lp-alert--error{
+        border-color:rgba(239,68,68,0.25);
+        background:rgba(239,68,68,0.08);
+    }
+
+    /* Responsive */
+    @media (max-width: 980px){
+        .lp-carousel-item{ flex:0 0 calc(50% - 9px); }
+        .lp-hero-bg-right::before{
+            right:-210px;
+            top:-185px;
+            width:620px;
+            height:590px;
+        }
+        .lp-hero-right{
+            min-height:360px;
+        }
+        .lp-hero-image{
+            width:360px;
+            max-width:100%;
+            right:-12px;
+            bottom:-46px;
+        }
+    }
+
+    @media (max-width: 640px){
+        .lp-hero-bg-right::before{
+            right:-250px;
+            top:-165px;
+            width:560px;
+            height:520px;
+        }
+        .lp-links{ gap:14px; justify-content:flex-start; }
+        .lp-hero-inner{ flex-direction:column; align-items:flex-start; }
+        .lp-hero-right{
+            width:100%;
+            min-height:auto;
+        }
+        .lp-hero-image{
+            width:260px;
+            max-width:100%;
+            position:relative;
+            right:auto;
+            bottom:auto;
+            margin-top:8px;
+        }
+        .lp-controls{ align-items:flex-start; }
+        .lp-filters{ flex-direction:column; align-items:flex-start; }
+        .lp-carousel-track{ padding:8px 44px; }
+        .lp-carousel-item{ flex:0 0 86%; }
 }
 </style>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const track = document.querySelector('[data-carousel-track]');
+        if (!track) return;
+
+        const prev = document.querySelector('[data-carousel-prev]');
+        const next = document.querySelector('[data-carousel-next]');
+
+        const amount = 300;
+
+        if (prev) {
+            prev.addEventListener('click', function () {
+                track.scrollBy({ left: -amount, behavior: 'smooth' });
+            });
+        }
+
+        if (next) {
+            next.addEventListener('click', function () {
+                track.scrollBy({ left: amount, behavior: 'smooth' });
+            });
+        }
+    });
+</script>
+@endpush
 @endsection
+

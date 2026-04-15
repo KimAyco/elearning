@@ -4,18 +4,19 @@
 
 @section('content')
 <div class="login-page">
-    <header class="login-nav">
-        <div class="login-nav-inner">
-            <a href="/" class="login-brand">
-                <span class="login-brand-icon">E</span>
-                <span class="login-brand-name">EduPlatform</span>
-            </a>
-        </div>
-    </header>
-
     <main class="login-main">
         <div class="login-card">
             <div class="login-form-wrap">
+                @php
+                    $loginBackUrl = isset($prefillSchoolCode) && $prefillSchoolCode !== ''
+                        ? url('/schools/' . rawurlencode((string) $prefillSchoolCode) . '/enroll')
+                        : url('/');
+                @endphp
+                <a href="{{ $loginBackUrl }}" class="login-back-icon" aria-label="Back to public page" title="Back">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </a>
                 <header class="login-header">
                     <h1 class="login-title">{{ isset($schoolName) ? 'Sign in to ' . $schoolName : 'Sign in to your school' }}</h1>
                     <p class="login-subtitle">{{ isset($prefillSchoolCode) ? 'Enter your credentials to access the portal.' : 'Enter your school code and credentials to access the portal.' }}</p>
@@ -86,46 +87,24 @@
                                 </button>
                             </div>
                         </div>
+                        <p class="login-forgot"><a href="{{ url('/forgot-password') }}">Forgot Password?</a></p>
 
                         <button class="auth-login-submit" type="submit">
                             <span>Sign in to portal</span>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-                            </svg>
                         </button>
                     </form>
 
-                    <p class="auth-login-back">
-                        <a href="/">← Back to public portal</a>
-                    </p>
+                    <div class="login-social" aria-hidden="true">
+                        <svg class="login-social-google" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" focusable="false">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                    </div>
                 </div>
-                    @php
-                        /** @var string|null $schoolTheme */
-                        $schoolTheme = $schoolTheme ?? null;
-                        $authBg = null;
-                        if ($schoolTheme === 'green') {
-                            $authBg = 'linear-gradient(165deg, #16a34a 0%, #15803d 100%)';
-                        } elseif ($schoolTheme === 'indigo') {
-                            $authBg = 'linear-gradient(165deg, #4f46e5 0%, #3730a3 100%)';
-                        } elseif ($schoolTheme === 'slate') {
-                            $authBg = 'linear-gradient(165deg, #475569 0%, #1e293b 100%)';
-                        } elseif ($schoolTheme === 'blue') {
-                            $authBg = 'linear-gradient(165deg, #2563eb 0%, #1d4ed8 100%)';
-                        } elseif ($schoolTheme === 'teal') {
-                            $authBg = 'linear-gradient(165deg, #14b8a6 0%, #0f766e 100%)';
-                        } elseif ($schoolTheme === 'amber') {
-                            $authBg = 'linear-gradient(165deg, #f59e0b 0%, #b45309 100%)';
-                        } elseif ($schoolTheme === 'rose') {
-                            $authBg = 'linear-gradient(165deg, #fb7185 0%, #e11d48 100%)';
-                        } elseif ($schoolTheme === 'purple') {
-                            $authBg = 'linear-gradient(165deg, #8b5cf6 0%, #6d28d9 100%)';
-                        } elseif ($schoolTheme === 'emerald') {
-                            $authBg = 'linear-gradient(165deg, #10b981 0%, #047857 100%)';
-                        } elseif ($schoolTheme === 'sky') {
-                            $authBg = 'linear-gradient(165deg, #38bdf8 0%, #0284c7 100%)';
-                        }
-                    @endphp
-                <div class="auth-split-image" aria-hidden="true" @if($authBg) style="background: {{ $authBg }};" @endif>
+                {{-- Split panel uses CSS green gradient only: matches hero, inputs, and CTA. School theme is not applied here to avoid clashing with EduPlatform login chrome. --}}
+                <div class="auth-split-image" aria-hidden="true">
                     <div class="auth-split-image-bg"></div>
                     <div class="auth-split-image-overlay"></div>
                     <div class="auth-split-image-frame">
@@ -148,42 +127,42 @@
                             @endif
                         </div>
                     </div>
+                    <p class="auth-welcome">WELCOME BACK!</p>
                 </div>
             </div>
         </div>
     </main>
-
-    <footer class="schools-footer">
-        <p>© {{ date('Y') }} EduPlatform</p>
-    </footer>
 </div>
 
 <style>
-/* Login page — variables & layout */
 .login-page {
-    --login-bg: #f3f4f6;
+    --login-bg: #e5e7eb;
     --login-surface: #fff;
-    --login-border: #e5e7eb;
+    --login-border: rgba(15,23,42,0.14);
     --login-ink: #0f172a;
-    --login-muted: #6b7280;
+    --login-muted: #475569;
     --login-radius: 12px;
-    --login-radius-lg: 20px;
+    --login-radius-lg: 24px;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background: var(--login-bg);
+    background:
+        linear-gradient(120deg, rgba(10,40,10,0.20), rgba(50,146,0,0.30)),
+        url("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=80");
+    background-size: cover;
+    background-position: center;
 }
 
 .login-nav {
-    border-bottom: 1px solid var(--login-border);
-    background: rgba(255,255,255,0.9);
+    border-bottom: 1px solid rgba(255,255,255,0.28);
+    background: rgba(255,255,255,0.86);
     backdrop-filter: blur(12px);
 }
 
 .login-nav-inner {
     max-width: 1000px;
     margin: 0 auto;
-    padding: 14px 20px;
+    padding: 8px 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -197,25 +176,22 @@
     color: inherit;
 }
 
-.login-brand:hover { opacity: 0.85; }
+.login-brand:hover { opacity: 0.88; }
 
-.login-brand-icon {
-    width: 28px;
+.login-brand-logo {
+    display: block;
     height: 28px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: #fff;
-    background: linear-gradient(135deg, #374151, #1f2937);
+    width: auto;
+    max-width: min(130px, 30vw);
+    object-fit: contain;
+    object-position: left center;
 }
 
 .login-brand-name {
-    font-weight: 600;
     font-size: 0.95rem;
+    font-weight: 700;
     color: var(--login-ink);
+    letter-spacing: 0.01em;
 }
 
 .login-main {
@@ -223,45 +199,79 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: calc(100vh - 120px);
-    padding: 24px 20px;
+    min-height: 100vh;
+    padding: 20px 16px;
 }
 
 .login-card {
     display: flex;
     width: 100%;
-    max-width: 880px;
-    min-height: 480px;
-    background: var(--login-surface);
+    max-width: 640px;
+    min-height: 0;
+    background: rgba(255,255,255,0.76);
     border-radius: var(--login-radius-lg);
-    border: 1px solid var(--login-border);
-    box-shadow: 0 4px 24px rgba(15,23,42,0.06);
+    border: 1px solid rgba(255,255,255,0.45);
+    box-shadow: 0 18px 44px rgba(2, 6, 23, 0.24);
     overflow: hidden;
+    backdrop-filter: blur(2px);
 }
 
-.login-card:hover { box-shadow: 0 12px 32px rgba(15,23,42,0.08); }
+.login-card:hover { box-shadow: 0 22px 54px rgba(2,6,23,0.26); }
 
 .login-form-wrap {
     flex: 1;
     min-width: 0;
-    padding: 36px 32px 32px;
+    padding: 22px 28px 18px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.80) 100%);
+    position: relative;
 }
 
-.login-header { margin-bottom: 24px; }
+.login-back-icon {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.85);
+    border: 1px solid rgba(15,23,42,0.12);
+    color: #0f172a;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    box-shadow: 0 6px 16px rgba(15,23,42,0.10);
+    transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease;
+}
+.login-back-icon:hover {
+    transform: translateY(-1px);
+    background: #ffffff;
+    border-color: rgba(15,23,42,0.18);
+    text-decoration: none;
+}
+.login-back-icon:active { transform: translateY(0); }
+.login-back-icon:focus-visible {
+    outline: 3px solid rgba(37, 99, 235, 0.35);
+    outline-offset: 2px;
+}
+
+.login-header { margin-bottom: 10px; }
 
 .login-title {
     margin: 0 0 4px;
-    font-size: 1.4rem;
-    font-weight: 700;
+    font-size: 1.1rem;
+    font-weight: 800;
     color: var(--login-ink);
     line-height: 1.3;
+    text-align: center;
 }
 
 .login-subtitle {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 0.78rem;
     color: var(--login-muted);
     line-height: 1.5;
+    text-align: center;
 }
 
 .login-alert {
@@ -284,46 +294,40 @@
 
 .auth-split-image {
     position: relative;
-    width: 38%;
-    min-width: 240px;
-    min-height: 400px;
-    background: linear-gradient(165deg, #374151 0%, #1f2937 100%);
+    width: 34%;
+    min-width: 200px;
+    min-height: 320px;
+    background: linear-gradient(165deg, #1f7f2d 0%, #155f25 100%);
     overflow: hidden;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 32px;
+    gap: 16px;
+    padding: 20px 12px;
+    border-top-left-radius: 28px;
+    border-bottom-left-radius: 28px;
 }
 
 .auth-split-image-frame {
     position: relative;
     width: 100%;
-    max-width: 240px;
-    padding: 16px;
+    max-width: 160px;
+    padding: 0;
     z-index: 1;
-}
-
-.auth-split-image-frame::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: 20px;
-    pointer-events: none;
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2) inset;
+    flex-shrink: 0;
 }
 
 .auth-split-image-frame-inner {
     position: relative;
-    border-radius: 12px;
-    padding: 24px;
-    background: rgba(255, 255, 255, 0.06);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    border-radius: 0;
+    padding: 0;
+    background: transparent;
 }
 
 .auth-split-img {
     width: 100%;
-    max-height: 260px;
+    max-height: 220px;
     height: auto;
     object-fit: contain;
     object-position: center;
@@ -331,18 +335,18 @@
 }
 
 .auth-split-initial {
-    width: 140px;
-    height: 140px;
+    width: 96px;
+    height: 96px;
     border-radius: 999px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 3rem;
+    font-size: 2rem;
     font-weight: 800;
     color: #ffffff;
     background: rgba(255, 255, 255, 0.18);
-    box-shadow: 0 10px 24px rgba(0,0,0,0.25), inset 0 0 0 1px rgba(255,255,255,0.35);
-    margin: 20px auto;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+    margin: 12px auto;
 }
 
 .auth-split-image-bg {
@@ -358,61 +362,63 @@
     position: absolute;
     inset: 0;
     background:
-        linear-gradient(180deg, rgba(0,0,0,0.15) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.12) 100%),
-        rgba(15,23,42,0.3);
+        linear-gradient(180deg, rgba(0,0,0,0.12) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.10) 100%),
+        rgba(5,50,16,0.22);
     pointer-events: none;
 }
-
-.login-footer-bar,
-.schools-footer {
-    border-top: 1px solid #e5e7eb;
-    background: #ffffff;
-    padding: 18px 20px 22px;
+.auth-welcome {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    max-width: 100%;
     text-align: center;
-    font-size: 0.8rem;
-    color: #9ca3af;
+    font-size: 1rem;
+    letter-spacing: 0.03em;
+    font-weight: 800;
+    color: rgba(245, 253, 245, 0.92);
+    z-index: 2;
+    flex-shrink: 0;
 }
 
 /* Form — scoped to .login-form-wrap */
 .login-form-wrap .form-group { margin-bottom: 2px; }
 
-.login-form-wrap .stack { gap: 14px; }
+.login-form-wrap .stack { gap: 10px; }
 
 .login-form-wrap label {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #374151;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #22303b;
 }
 
 .login-form-wrap input[type="text"],
 .login-form-wrap input[type="email"],
 .login-form-wrap input[type="password"] {
-    padding: 10px 12px 10px 40px;
-    border-radius: 999px;
-    border: 1px solid var(--login-border);
+    padding: 9px 10px 9px 36px;
+    border-radius: 8px;
+    border: 2px solid rgba(31,94,56,0.55);
     font-size: 0.9rem;
-    background: var(--login-surface);
-    box-shadow: 0 1px 2px rgba(15,23,42,0.04);
+    background: rgba(248,252,248,0.82);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .login-form-wrap input:focus {
-    border-color: #374151;
-    box-shadow: 0 0 0 2px rgba(55,65,81,0.15);
+    border-color: #329200;
+    box-shadow: 0 0 0 3px rgba(50,146,0,0.18);
 }
 
 .login-form-wrap .input-wrap {
-    border-radius: 999px;
-    border: 1px solid var(--login-border);
-    background: var(--login-surface);
-    box-shadow: 0 1px 2px rgba(15,23,42,0.04);
+    border-radius: 8px;
+    border: 2px solid rgba(31,94,56,0.55);
+    background: rgba(248,252,248,0.82);
 }
 
 .login-form-wrap .input-wrap input { border: none; box-shadow: none; border-radius: 999px; }
 
 .login-form-wrap .input-wrap:focus-within {
-    border-color: #374151;
-    box-shadow: 0 0 0 2px rgba(55,65,81,0.15);
+    border-color: #329200;
+    box-shadow: 0 0 0 3px rgba(50,146,0,0.18);
 }
 
 .auth-login-submit {
@@ -421,21 +427,20 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    margin-top: 10px;
+    margin-top: 6px;
     padding: 10px 16px;
     border: none;
     border-radius: 999px;
-    background: #1f2937;
+    background: linear-gradient(135deg, #2c7a33 0%, #256a2d 100%);
     color: #ffffff;
-    font-size: 0.9rem;
-    font-weight: 600;
+    font-size: 0.88rem;
+    font-weight: 700;
     cursor: pointer;
     transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
 }
 
 .auth-login-submit:hover {
-    background: #374151;
-    box-shadow: 0 10px 22px rgba(31, 41, 55, 0.35);
+    box-shadow: 0 12px 22px rgba(37,106,45,0.40);
     transform: translateY(-1px);
 }
 
@@ -452,33 +457,61 @@
 
 .login-form-wrap .auth-login-back,
 .login-form-footer {
-    margin: 22px 0 0;
-    padding-top: 18px;
-    border-top: 1px solid var(--login-border);
+    margin: 10px 0 0;
+    padding-top: 10px;
+    border-top: 2px solid rgba(31,94,56,0.24);
     text-align: center;
 }
 
 .login-form-wrap .auth-login-back a,
 .login-back-link {
-    font-size: 0.82rem;
-    color: var(--login-muted);
+    font-size: 0.88rem;
+    color: #3f5e4a;
     text-decoration: none;
     transition: color 0.15s;
+    font-weight:600;
 }
 
 .login-form-wrap .auth-login-back a:hover,
-.login-back-link:hover { color: #1f2937; }
+.login-back-link:hover { color: #256a2d; }
+
+.login-forgot{
+    margin: -2px 0 4px;
+}
+.login-forgot a{
+    color:#294f3a;
+    font-weight:700;
+    text-decoration: underline;
+}
+
+.login-social {
+    margin-top: 8px;
+    text-align: center;
+    line-height: 0;
+}
+
+.login-social-google {
+    width: 28px;
+    height: 28px;
+    display: inline-block;
+    vertical-align: middle;
+}
 
 @media (max-width: 900px) {
     .auth-split-image { display: none; }
-    .login-form-wrap { padding: 32px 28px; }
+    .login-form-wrap { padding: 20px 18px; }
+    .login-title{ font-size:1.15rem; text-align:left; }
+    .login-subtitle{ text-align:left; font-size:0.82rem; }
+    .login-card{ min-height: 0; max-width: 560px; }
 }
 
 @media (max-width: 640px) {
-    .login-nav-inner { padding-inline: 16px; }
-    .login-main { padding: 20px 16px; }
-    .login-card { min-height: 0; }
-    .login-form-wrap { padding: 24px 20px; }
+    .login-nav-inner { padding: 7px 14px; }
+    .login-brand-logo { height: 24px; max-width: 110px; }
+    .login-brand-name { font-size: 0.88rem; }
+    .login-main { padding: 16px 14px; }
+    .login-card { min-height: 0; max-width: 100%; }
+    .login-form-wrap { padding: 18px 16px; }
 }
 </style>
 @endsection

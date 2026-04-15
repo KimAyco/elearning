@@ -12,6 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Hostinger (and similar) terminate TLS in front of PHP; trust X-Forwarded-* so
+        // request()->root() and asset URLs use https and the correct host.
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'superadmin.auth' => \App\Http\Middleware\EnsureSuperAdminAuthenticated::class,
             'tenant.context' => \App\Http\Middleware\EnsureTenantContext::class,

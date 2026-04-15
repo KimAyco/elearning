@@ -41,7 +41,7 @@ class PublicSchoolController extends Controller
         return view('tenant.login', [
             'prefillSchoolCode' => $school->school_code,
             'schoolName'        => $school->name,
-            'schoolLogoUrl'     => $school->logo_url,
+            'schoolLogoUrl'     => $school->schoolSealLogoUrl() ?? $school->logo_url,
             'schoolCoverUrl'    => $school->cover_image_url,
             'schoolTheme'       => $school->theme,
         ]);

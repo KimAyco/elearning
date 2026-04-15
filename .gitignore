@@ -36,6 +36,14 @@
 .DS_Store
 Thumbs.db
 
+# Local DB exports (do not commit)
+elearn.sql
+
+# Scratch / local exports (not for repo)
+route_list.json
+webapp_pages.txt
+webapp_pages.text
+
 # Temp / backup
 .tmp_*
 *.tmp

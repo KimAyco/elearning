@@ -99,7 +99,7 @@ class ApplicantEnrollmentController extends Controller
         ]);
         $request->session()->forget('enrollment_email_verified');
 
-        $this->sendBrevoVerification($payload['email'], $payload['full_name'], $code);
+        $this->sendBrevoVerification($school, $payload['email'], $payload['full_name'], $code);
 
         return redirect()->route('enroll.verify', ['school_code' => $school->school_code])->with('status', 'We sent a verification code to your email.');
     }
@@ -298,11 +298,11 @@ class ApplicantEnrollmentController extends Controller
             'code' => $code,
             'expires_at' => now()->addMinutes(10)->timestamp,
         ]);
-        $this->sendBrevoVerification($applicant['email'], $applicant['full_name'], $code);
+        $this->sendBrevoVerification($school, $applicant['email'], $applicant['full_name'], $code);
         return back()->with('status', 'A new code was sent to your email.');
     }
 
-    private function sendBrevoVerification(string $email, string $name, string $code): void
+    private function sendBrevoVerification(School $school, string $email, string $name, string $code): void
     {
         $apiKey = (string) env('BREVO_API_KEY', '');
         if ($apiKey === '') {
@@ -310,13 +310,26 @@ class ApplicantEnrollmentController extends Controller
         }
         $senderEmail = (string) env('BREVO_SENDER_EMAIL', 'no-reply@example.com');
         $senderName = (string) env('BREVO_SENDER_NAME', 'Enrollment Desk');
-        $subject = 'Your Enrollment Email Verification Code';
-        $text = "Hello {$name},\n\nYour verification code is {$code}.\nThis code will expire in 10 minutes.";
+        $subject = $school->name . ' - Enrollment Email Verification Code';
+        $verificationUrl = route('enroll.verify', ['school_code' => $school->school_code]);
+        $text = "Hello {$name},\n\n"
+            . "Your verification code for {$school->name} is {$code}.\n"
+            . "This code will expire in 10 minutes.\n\n"
+            . "Verify here: {$verificationUrl}\n\n"
+            . "If you did not request this, you can safely ignore this email.";
+        $html = view('emails.enrollment-verification', [
+            'school' => $school,
+            'name' => $name,
+            'code' => $code,
+            'verificationUrl' => $verificationUrl,
+            'expiresInMinutes' => 10,
+        ])->render();
         $payload = [
             'sender' => ['email' => $senderEmail, 'name' => $senderName],
             'to' => [['email' => $email, 'name' => $name]],
             'subject' => $subject,
             'textContent' => $text,
+            'htmlContent' => $html,
         ];
         try {
             Http::withHeaders(['api-key' => $apiKey])->post('https://api.brevo.com/v3/smtp/email', $payload);

@@ -3,26 +3,12 @@
 @section('title', 'Billing - School Portal')
 
 @section('content')
-<div class="app-shell">
-    @include('tenant.partials.sidebar', ['active' => 'billing'])
+@include('tenant.partials.tenant-mock-ui')
+<div class="app-shell tenant-ui-mock">
+    @include('tenant.partials.sidebar', ['active' => 'billing', 'sidebarClass' => 'sidebar--edu-mock'])
 
     <div class="main-content">
-        <header class="topbar">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <button class="hamburger" aria-label="Toggle menu">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-                    </svg>
-                </button>
-                <span class="topbar-title">Billing & Payments</span>
-            </div>
-            <div class="topbar-right">
-                <div class="topbar-user">
-                    <div class="avatar">{{ strtoupper(substr(auth()->user()->full_name ?? 'U', 0, 1)) }}</div>
-                    <span>{{ auth()->user()->full_name ?? 'User' }}</span>
-                </div>
-            </div>
-        </header>
+        @include('tenant.partials.mock-topbar')
 
         <main class="page-body">
 
@@ -73,18 +59,27 @@
                     </div>
                 </div>
 
-                {{-- Search Bar --}}
-                <div class="billing-search-bar">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                    </svg>
-                    <input type="text" id="billing-search" placeholder="Search Billing..." oninput="filterBillingTable(this.value)">
-                        </div>
+                {{-- Search Bar + button --}}
+                <div class="billing-search-row">
+                    <div class="billing-search-bar">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <input type="search" id="finance-billing-search" placeholder="Search Billing by ID or Name..." autocomplete="off">
+                    </div>
+                    <button type="button" class="btn secondary sm billing-search-btn" id="finance-billing-search-btn" aria-label="Search billing list">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        Search
+                    </button>
+                </div>
 
                 {{-- Billing Rules Table --}}
                 <div class="card" style="padding:0; overflow:hidden;">
                     <div class="table-wrap" style="margin:0;">
-                        <table id="billing-table">
+                        <table id="finance-billing-table">
                                 <thead>
                                     <tr>
                                     <th style="width:70px;">
@@ -619,12 +614,12 @@
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                     </svg>
-                    <input type="text" placeholder="Search billing..." oninput="filterBillingTable(this.value)">
+                    <input type="text" id="student-billing-search" placeholder="Search billing..." oninput="filterStudentBillingTable(this.value)">
                 </div>
 
                 <div class="card" style="padding:0; overflow:hidden;">
                     <div class="table-wrap" style="margin:0;">
-                        <table id="billing-table">
+                        <table id="student-billing-table">
                             <thead>
                                 <tr>
                                     <th>Billing #</th>
@@ -704,7 +699,7 @@
 
     .billing-title-block {
         display: flex;
-        align-items: center;
+        align-items: stretch;
         gap: 10px;
         color: var(--ink);
     }
@@ -758,6 +753,29 @@
     .btn-billing-action.teal:hover { background: #0f766e; border-color: #0f766e; }
 
     /* ── Search Bar ───────────────────────────────────────────── */
+    .billing-search-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: stretch;
+        gap: 10px;
+        margin-bottom: 2px;
+    }
+    .billing-search-row .billing-search-bar {
+        flex: 1 1 220px;
+        max-width: 380px;
+    }
+    .billing-search-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: auto;
+        min-height: 44px;
+        padding: 9px 14px;
+        white-space: nowrap;
+    }
+    .billing-search-btn svg {
+        flex-shrink: 0;
+    }
     .billing-search-bar {
         display: flex;
         align-items: center;
@@ -766,6 +784,7 @@
         border: 1.5px solid var(--border);
         border-radius: var(--radius);
         padding: 8px 12px;
+        min-height: 44px;
         max-width: 380px;
         color: var(--muted);
         transition: border-color .15s;
@@ -836,7 +855,7 @@
 
     .section-divider {
         display: flex;
-        align-items: center;
+        align-items: stretch;
         gap: 10px;
         margin-bottom: 12px;
         font-size: 0.78rem;
@@ -914,6 +933,51 @@
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .form-label { font-size: 0.78rem; font-weight: 600; color: var(--ink-2); }
     .req { color: var(--red); }
+
+    /* ── Visual refinements: badges + table ─────────────────────────── */
+    .billing-header {
+        padding: 14px 16px;
+        border-radius: var(--radius-lg);
+        background: rgba(255,255,255,0.9);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+    }
+
+    #billing-table {
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    #billing-table thead th {
+        background: linear-gradient(180deg, rgba(248,250,252,1) 0%, rgba(241,245,249,1) 100%);
+        border-bottom: 1px solid var(--border);
+        color: var(--muted);
+        font-weight: 800;
+        font-size: 0.72rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    #billing-table tbody tr {
+        transition: background .15s ease;
+    }
+
+    #billing-table tbody tr:hover {
+        background: rgba(79,70,229,0.04);
+    }
+
+    /* Softer badge colors on the billing page */
+    .billing-page .badge {
+        text-transform: none;
+        font-weight: 800;
+        border-color: rgba(226,232,240,0.95) !important;
+    }
+
+    .billing-page .badge.green  { background: rgba(22,163,74,0.10); color: #15803d; }
+    .billing-page .badge.amber  { background: rgba(180,83,9,0.10); color: #b45309; }
+    .billing-page .badge.blue   { background: rgba(37,99,235,0.10); color: #2563eb; }
+    .billing-page .badge.purple { background: rgba(109,40,217,0.10); color: #6d28d9; }
+
 </style>
 
 @php
@@ -1001,9 +1065,21 @@
     }
 
     // ── Search / filter ───────────────────────────────────────
-    function filterBillingTable(query) {
-        const q = query.toLowerCase();
-        document.querySelectorAll('#billing-table .billing-row').forEach(row => {
+    function filterFinanceBillingTable(query) {
+        const q = (query || '').trim().toLowerCase();
+        document.querySelectorAll('#finance-billing-table .billing-row').forEach((row) => {
+            const idCell = row.querySelector('td:first-child');
+            const nameCell = row.querySelector('.billing-name-cell');
+            const idText = (idCell?.textContent || '').replace(/[^0-9a-z]/gi, '').toLowerCase();
+            const nameText = (nameCell?.textContent || '').toLowerCase().trim();
+            const visible = q === '' || idText.includes(q) || nameText.includes(q);
+            row.style.display = visible ? '' : 'none';
+        });
+    }
+
+    function filterStudentBillingTable(query) {
+        const q = (query || '').trim().toLowerCase();
+        document.querySelectorAll('#student-billing-table .billing-row').forEach((row) => {
             const text = row.textContent.toLowerCase();
             row.style.display = text.includes(q) ? '' : 'none';
         });
@@ -1012,7 +1088,7 @@
     // ── Sort ──────────────────────────────────────────────────
     let sortDir = [1, 1];
     function sortTable(col) {
-        const tbody = document.querySelector('#billing-table tbody');
+        const tbody = document.querySelector('#finance-billing-table tbody');
         if (!tbody) return;
         const rows = Array.from(tbody.querySelectorAll('tr.billing-row'));
         sortDir[col] *= -1;
@@ -1026,5 +1102,31 @@
         });
         rows.forEach(r => tbody.appendChild(r));
     }
+
+    (function () {
+        const input = document.getElementById('finance-billing-search');
+        const btn = document.getElementById('finance-billing-search-btn');
+        if (!input) return;
+        let timer = null;
+        const run = () => filterFinanceBillingTable(input.value);
+        input.addEventListener('input', () => {
+            if (timer) window.clearTimeout(timer);
+            timer = window.setTimeout(run, 250);
+        });
+        input.addEventListener('search', run);
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (timer) window.clearTimeout(timer);
+                run();
+            }
+        });
+        if (btn) btn.addEventListener('click', () => {
+            if (timer) window.clearTimeout(timer);
+            run();
+        });
+    })();
 </script>
 @endpush
+
+

@@ -45,7 +45,11 @@ Route::post('/superadmin/login', [SuperAdminAuthController::class, 'login'])->mi
 Route::post('/superadmin/logout', [SuperAdminAuthController::class, 'logout'])->middleware('superadmin.auth');
 
 Route::middleware('superadmin.auth')->prefix('superadmin')->group(function (): void {
-    Route::get('/schools', [SuperAdminSchoolController::class, 'index']);
+    Route::get('/', [SuperAdminSchoolController::class, 'dashboard'])->name('superadmin.dashboard');
+    Route::get('/dashboard', [SuperAdminSchoolController::class, 'dashboard']);
+    Route::get('/schools', [SuperAdminSchoolController::class, 'schools'])->name('superadmin.schools');
+    Route::get('/pricing', [SuperAdminSchoolController::class, 'pricing'])->name('superadmin.pricing');
+    Route::get('/approvals', [SuperAdminSchoolController::class, 'approvals'])->name('superadmin.approvals');
     Route::post('/schools', [SuperAdminSchoolController::class, 'store']);
     Route::post('/pricing/platform', [SuperAdminSchoolController::class, 'updatePlatformPricing']);
     Route::post('/pricing/plans', [SuperAdminSchoolController::class, 'upsertPaymentPlan']);
@@ -63,15 +67,32 @@ Route::middleware('tenant.context')->prefix('tenant')->group(function (): void {
     Route::get('/dashboard', [TenantPortalController::class, 'dashboard']);
     Route::get('/lms', [TenantPortalController::class, 'lmsPage']);
     Route::get('/lms/classes/{classGroup}/{subject}', [TenantPortalController::class, 'lmsClassDashboard'])->middleware('tenant.permission:teacher.content.manage');
+    Route::post('/lms/classes/{classGroup}/{subject}/card-appearance', [TenantPortalController::class, 'saveLmsCourseCardAppearance']);
     Route::post('/lms/classes/{classGroup}/{subject}/lessons', [TenantPortalController::class, 'lmsStoreLesson'])->middleware('tenant.permission:teacher.content.manage');
+    Route::post('/lms/classes/{classGroup}/{subject}/lessons/reorder', [TenantPortalController::class, 'lmsReorderLessons'])->middleware('tenant.permission:teacher.content.manage');
+    Route::patch('/lms/lessons/{lesson}', [TenantPortalController::class, 'lmsUpdateLesson'])->middleware('tenant.permission:teacher.content.manage');
+    Route::delete('/lms/lessons/{lesson}', [TenantPortalController::class, 'lmsDestroyLesson'])->middleware('tenant.permission:teacher.content.manage');
     Route::post('/lms/classes/{classGroup}/{subject}/modules', [TenantPortalController::class, 'lmsStoreModule'])->middleware('tenant.permission:teacher.content.manage');
-    Route::get('/lms/modules/{module}/download', [TenantPortalController::class, 'lmsDownloadModule'])->middleware('tenant.permission:teacher.content.manage');
+    Route::patch('/lms/modules/{module}', [TenantPortalController::class, 'lmsUpdateModule'])->middleware('tenant.permission:teacher.content.manage');
+    Route::delete('/lms/modules/{module}', [TenantPortalController::class, 'lmsDestroyModule'])->middleware('tenant.permission:teacher.content.manage');
+    Route::post('/lms/classes/{classGroup}/{subject}/classroom-meetings', [TenantPortalController::class, 'lmsStoreClassroomMeeting'])->middleware('tenant.permission:teacher.content.manage');
+    Route::post('/lms/classes/{classGroup}/{subject}/classroom-meetings/google', [TenantPortalController::class, 'lmsCreateClassroomMeetingWithGoogle'])->middleware('tenant.permission:teacher.content.manage');
+    Route::get('/lms/google/auth', [TenantPortalController::class, 'lmsGoogleAuth'])->middleware('tenant.permission:teacher.content.manage');
+    Route::get('/lms/google/callback', [TenantPortalController::class, 'lmsGoogleCallback']);
+    Route::get('/lms/google/check', [TenantPortalController::class, 'lmsCheckGoogleConnection']);
+    Route::get('/lms/modules/{module}/view', [TenantPortalController::class, 'lmsViewModule']);
+    Route::get('/lms/modules/{module}/download', [TenantPortalController::class, 'lmsDownloadModule']);
 
     // LMS Quizzes
     Route::get('/lms/classes/{classGroup}/{subject}/gradebook', [\App\Http\Controllers\Tenant\QuizController::class, 'gradebook']);
     Route::post('/lms/classes/{classGroup}/{subject}/quizzes', [\App\Http\Controllers\Tenant\QuizController::class, 'store']);
+    Route::post('/lms/classes/{classGroup}/{subject}/quizzes/ai-generate', [\App\Http\Controllers\Tenant\QuizController::class, 'aiGenerate'])->middleware('tenant.permission:teacher.content.manage');
+    Route::post('/lms/classes/{classGroup}/{subject}/quizzes/ai-upload', [\App\Http\Controllers\Tenant\QuizController::class, 'aiUploadDocument'])->middleware('tenant.permission:teacher.content.manage');
+    Route::post('/lms/classes/{classGroup}/{subject}/quizzes/ai-generate-from-doc', [\App\Http\Controllers\Tenant\QuizController::class, 'aiGenerateFromDocument'])->middleware('tenant.permission:teacher.content.manage');
+    Route::post('/lms/classes/{classGroup}/{subject}/quizzes/ai-save', [\App\Http\Controllers\Tenant\QuizController::class, 'aiSave'])->middleware('tenant.permission:teacher.content.manage');
     Route::post('/lms/quizzes/{quiz}/questions', [\App\Http\Controllers\Tenant\QuizController::class, 'addQuestion']);
     Route::post('/lms/quizzes/{quiz}/publish', [\App\Http\Controllers\Tenant\QuizController::class, 'publish']);
+    Route::delete('/lms/quizzes/{quiz}', [\App\Http\Controllers\Tenant\QuizController::class, 'destroy'])->middleware('tenant.permission:teacher.content.manage');
     Route::get('/lms/quizzes/{quiz}/results', [\App\Http\Controllers\Tenant\QuizController::class, 'results']);
         Route::post('/lms/attempts/{attempt}/grade', [\App\Http\Controllers\Tenant\QuizController::class, 'gradeEssay']);
 
@@ -79,6 +100,7 @@ Route::middleware('tenant.context')->prefix('tenant')->group(function (): void {
         Route::get('/lms/quizzes/{quiz}', [\App\Http\Controllers\Tenant\QuizController::class, 'show']);
         Route::post('/lms/quizzes/{quiz}/start', [\App\Http\Controllers\Tenant\QuizController::class, 'start']);
         Route::post('/lms/quizzes/{quiz}/submit', [\App\Http\Controllers\Tenant\QuizController::class, 'submit']);
+    Route::get('/classes/{classGroup}/{subject}/meet-join', [TenantPortalController::class, 'studentJoinClassroomMeet']);
     Route::get('/classes/{classGroup}/{subject}', [TenantPortalController::class, 'studentLessonsPage']);
     Route::get('/class', [TenantPortalController::class, 'classPage']);
 
@@ -138,6 +160,15 @@ Route::middleware('tenant.context')->prefix('tenant')->group(function (): void {
 
     Route::get('/school-page', [TenantPortalController::class, 'schoolPage'])->middleware('tenant.permission:school_admin.manage_staff');
     Route::post('/school-page', [TenantPortalController::class, 'updateSchoolPage'])->middleware('tenant.permission:school_admin.manage_staff');
+    Route::permanentRedirect('school_page', '/tenant/school-page');
+
+    Route::get('/settings/appearance', [TenantPortalController::class, 'settingsAppearancePage']);
+    Route::post('/settings/appearance', [TenantPortalController::class, 'updateSettingsAppearance'])->middleware('tenant.permission:school_admin.manage_staff');
+    Route::get('/settings/account', [TenantPortalController::class, 'settingsAccountPage']);
+    Route::post('/settings/account/email', [TenantPortalController::class, 'updateSettingsAccountEmail']);
+    Route::post('/settings/account/password', [TenantPortalController::class, 'updateSettingsAccountPassword']);
+    Route::post('/settings/account/avatar', [TenantPortalController::class, 'updateSettingsAccountAvatar']);
+    Route::get('/settings/account/avatar/view', [TenantPortalController::class, 'viewSettingsAccountAvatar']);
 
     Route::get('/admin', [TenantPortalController::class, 'adminPage']);
     Route::get('/admin/structure/add', [TenantPortalController::class, 'adminAddStructurePage']);
@@ -168,6 +199,9 @@ Route::middleware('tenant.context')->prefix('tenant')->group(function (): void {
     Route::post('/admin/programs', [TenantPortalController::class, 'adminCreateProgram'])->middleware('tenant.permission:school_admin.manage_curriculum');
     Route::post('/admin/curriculum-items', [TenantPortalController::class, 'adminAddCurriculumItem'])->middleware('tenant.permission:school_admin.manage_curriculum');
     Route::post('/admin/curriculum-items/{curriculumItem}/remove', [TenantPortalController::class, 'adminRemoveCurriculumItem'])->middleware('tenant.permission:school_admin.manage_curriculum');
+    Route::post('/admin/program-prospectuses', [TenantPortalController::class, 'adminSaveProgramProspectus'])->middleware('tenant.permission:school_admin.manage_curriculum');
+    Route::post('/admin/program-prospectuses/load', [TenantPortalController::class, 'adminLoadProgramProspectusById'])->middleware('tenant.permission:school_admin.manage_curriculum');
+    Route::post('/admin/programs/{program}/curriculum-reset', [TenantPortalController::class, 'adminResetProgramCurriculum'])->middleware('tenant.permission:school_admin.manage_curriculum');
     Route::post('/admin/subjects', [TenantPortalController::class, 'adminCreateSubject'])->middleware('tenant.permission:school_admin.manage_curriculum');
     Route::post('/admin/subjects/{subject}/update', [TenantPortalController::class, 'adminUpdateSubject'])->middleware('tenant.permission:school_admin.manage_curriculum');
     Route::post('/admin/semesters', [TenantPortalController::class, 'adminCreateSemester'])->middleware('tenant.permission:school_admin.manage_curriculum');

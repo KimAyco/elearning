@@ -28,6 +28,7 @@ class EnsureTenantContext
         }
 
         $school = School::query()
+            ->with('profile')
             ->where('id', $activeSchoolId)
             ->where('status', 'active')
             ->first();
@@ -70,6 +71,23 @@ class EnsureTenantContext
         $request->session()->put('role_codes', $roleCodes);
         $request->session()->put('permission_codes', $permissionCodes);
         $request->session()->put('pending_student_activation', false);
+
+        $schoolLogoUrl = $school->schoolSealLogoUrl() ?? $school->logo_url;
+        $schoolFooterLogoUrl = $school->footer_logo_url ?: $schoolLogoUrl;
+        $schoolProfile = $school->profile;
+        $adminAppearance = $school->adminAppearanceConfig();
+        $request->session()->put('active_school_name', $school->name);
+        $request->session()->put('active_school_logo_url', $schoolLogoUrl);
+        $request->session()->put('active_school_footer_logo_url', $schoolFooterLogoUrl);
+        $request->session()->put('school_footer_short', (string) ($schoolProfile->footer_description ?? $school->short_description ?? 'Empowering students through quality education, innovation, and community engagement in Davao del Norte and beyond.'));
+        $request->session()->put('school_footer_address', (string) ($schoolProfile->footer_address ?? 'Panabo City, Davao del Norte, Philippines 8105'));
+        $request->session()->put('school_footer_email', (string) ($schoolProfile->footer_email ?? 'info@dnsc.edu.ph'));
+        $request->session()->put('school_footer_phone', (string) ($schoolProfile->footer_phone ?? '+63 912 345 6789'));
+        $request->session()->put('admin_appearance', $adminAppearance);
+        $request->attributes->set('active_school_name', $school->name);
+        $request->attributes->set('active_school_logo_url', $schoolLogoUrl);
+        $request->attributes->set('active_school_footer_logo_url', $schoolFooterLogoUrl);
+        $request->attributes->set('admin_appearance', $adminAppearance);
 
         return $next($request);
     }

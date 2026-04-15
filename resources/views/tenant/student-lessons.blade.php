@@ -3,26 +3,12 @@
 @section('title', 'Lessons - School Portal')
 
 @section('content')
-<div class="app-shell">
-    @include('tenant.partials.sidebar', ['active' => 'class'])
+@include('tenant.partials.tenant-mock-ui')
+<div class="app-shell tenant-ui-mock">
+    @include('tenant.partials.sidebar', ['active' => 'class', 'sidebarClass' => 'sidebar--edu-mock'])
 
     <div class="main-content">
-        <header class="topbar">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <button class="hamburger" aria-label="Toggle menu">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-                    </svg>
-                </button>
-                <span class="topbar-title">Lessons</span>
-            </div>
-            <div class="topbar-right">
-                <div class="topbar-user">
-                    <div class="avatar">{{ strtoupper(substr(auth()->user()->full_name ?? 'U', 0, 1)) }}</div>
-                    <span>{{ auth()->user()->full_name ?? 'User' }}</span>
-                </div>
-            </div>
-        </header>
+        @include('tenant.partials.mock-topbar')
 
         <main class="page-body">
             @php
@@ -44,9 +30,18 @@
 
             <div class="mdl-course-head">
                 <div class="mdl-course-head-main">
-                    <div class="mdl-course-kicker">{{ $subject->code ?? 'SUBJ' }}</div>
+                    <div class="mdl-course-head-badges">
+                        <span class="mdl-course-kicker">{{ $subject->code ?? 'SUBJ' }}</span>
+                        <span class="mdl-course-chip">{{ $classGroup->name ?? 'Class' }}</span>
+                    </div>
                     <h1 class="mdl-course-title">{{ $subject->title ?? 'Lessons' }}</h1>
-                    <div class="mdl-course-subtitle">{{ $classGroup->name ?? 'Class' }}</div>
+                    @if (($courseTeachers ?? collect())->isNotEmpty())
+                        <div class="mdl-course-teacher">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            {{ ($courseTeachers->count() === 1) ? 'Teacher' : 'Teachers' }}:
+                            <span class="mdl-course-teacher-names">{{ $courseTeachers->pluck('full_name')->filter()->join(', ') }}</span>
+                        </div>
+                    @endif
                 </div>
                 <div class="mdl-course-head-meta">
                     <span class="mdl-pill">{{ $totalResources }} resources</span>
@@ -67,12 +62,16 @@
                     <div class="mdl-block">
                         <div class="mdl-block-title">Course index</div>
                         <div class="mdl-nav">
+                            <div class="mdl-nav-group-label">General</div>
                             <a class="mdl-nav-item active" href="#section-general">General</a>
-                            @foreach ($lessonsList as $lesson)
+                            <div class="mdl-nav-group-label">Modules</div>
+                            @forelse ($lessonsList as $lesson)
                                 <a class="mdl-nav-item" href="#lesson-{{$lesson->id}}">{{ $lesson->title }}</a>
-                            @endforeach
+                            @empty
+                                <span class="mdl-nav-empty">No modules yet</span>
+                            @endforelse
                             @if ($modulesList->isNotEmpty())
-                            <a class="mdl-nav-item" href="#section-resources">Resources</a>
+                                <a class="mdl-nav-item" href="#section-resources">Resources</a>
                             @endif
                         </div>
                     </div>
@@ -92,9 +91,122 @@
                             <svg class="mdl-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                         </button>
                         <div class="mdl-section-body" data-accordion-panel>
-                            <div class="mdl-info">
+                            <div class="mdl-info mdl-info--item">
+                                <div class="mdl-info-icon" aria-hidden="true">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg>
+                                </div>
+                                <div>
                                 <div class="mdl-info-title">Welcome</div>
                                 <div class="mdl-info-text">All course materials from your teacher will appear under Resources.</div>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 12px;">
+                                @if (!empty($classroomMeeting?->meet_link))
+                                    @php
+                                        $meetTz = config('app.timezone');
+                                        $meetJoinUrl = url("/tenant/classes/{$classGroup->id}/{$subject->id}/meet-join");
+                                        $hasMeetSchedule = $classroomMeeting->scheduled_start && $classroomMeeting->scheduled_end;
+                                        $meetJoinAllowed = $classroomMeeting->isOpenForStudentJoin();
+                                        $studentJoinDeadline = $hasMeetSchedule ? $classroomMeeting->studentJoinDeadline() : null;
+                                        $lateEntryClosed = $hasMeetSchedule
+                                            && $classroomMeeting->restrictsLateEntry()
+                                            && $studentJoinDeadline
+                                            && now()->gt($studentJoinDeadline)
+                                            && $classroomMeeting->scheduled_end
+                                            && now()->lte($classroomMeeting->scheduled_end);
+                                    @endphp
+                                    <div class="mdl-info" style="background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); border: 1px solid #c7d2fe; padding: 20px;">
+                                        <div style="display: flex; align-items: flex-start; gap: 14px;">
+                                            <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #4F46E5 0%, #7c3aed 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+                                                    <path d="M15 10l5 5-5 5"/>
+                                                    <path d="M4 4v7a4 4 0 0 0 4 4h12"/>
+                                                </svg>
+                                            </div>
+                                            <div style="flex: 1; min-width: 0;">
+                                                <div style="font-weight: 800; font-size: 1rem; color: #1e293b;">{{ $classroomMeeting->title }}</div>
+                                                @if ($classroomMeeting->description)
+                                                    <div style="margin-top: 6px; font-size: 0.85rem; color: #4b5563; line-height: 1.5;">{{ Str::limit($classroomMeeting->description, 120) }}</div>
+                                                @endif
+                                                @if ($classroomMeeting->scheduled_start || $classroomMeeting->scheduled_end)
+                                                    <div style="margin-top: 12px; padding: 12px 14px; background: rgba(255,255,255,0.85); border: 1px solid #a5b4fc; border-radius: 10px;">
+                                                        <div style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #4338ca; margin-bottom: 10px;">When the meet runs</div>
+                                                        <div style="font-size: 0.68rem; color: #94a3b8; margin-bottom: 8px; line-height: 1.35;">Times use the school’s configured timezone: <strong style="color:#64748b;">{{ config('app.timezone') }}</strong></div>
+                                                        @if ($classroomMeeting->scheduled_start)
+                                                            <div style="font-size: 0.9rem; color: #0f172a; margin-bottom: 6px; line-height: 1.45;">
+                                                                <span style="color:#64748b; font-weight: 700; display: inline-block; min-width: 3.25rem;">Opens</span>
+                                                                {{ $classroomMeeting->scheduled_start->copy()->timezone($meetTz)->format('l, M j, Y \a\t g:i A') }}
+                                                            </div>
+                                                        @endif
+                                                        @if ($classroomMeeting->scheduled_end)
+                                                            <div style="font-size: 0.9rem; color: #0f172a; line-height: 1.45;">
+                                                                <span style="color:#64748b; font-weight: 700; display: inline-block; min-width: 3.25rem;">Ends</span>
+                                                                {{ $classroomMeeting->scheduled_end->copy()->timezone($meetTz)->format('l, M j, Y \a\t g:i A') }}
+                                                            </div>
+                                                        @endif
+                                                        @if ($classroomMeeting->restrictsLateEntry() && $studentJoinDeadline)
+                                                            <div style="font-size: 0.82rem; color: #b45309; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #fcd34d; line-height: 1.45;">
+                                                                <span style="font-weight: 800;">Last time to join (students):</span>
+                                                                {{ $studentJoinDeadline->copy()->timezone($meetTz)->format('l, M j, Y \a\t g:i A') }}
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                @else
+                                                    <div style="margin-top: 12px; padding: 10px 12px; background: rgba(255,255,255,0.55); border: 1px dashed #c7d2fe; border-radius: 10px; font-size: 0.82rem; color: #64748b; line-height: 1.45;">
+                                                        Your teacher must set both a start and end time before you can join. The Meet link is hidden until the scheduled window opens.
+                                                    </div>
+                                                @endif
+                                                <div style="margin-top: 16px;">
+                                                    @if ($meetJoinAllowed)
+                                                        <a href="{{ $meetJoinUrl }}" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(135deg, #4F46E5 0%, #7c3aed 100%); color: #fff; border: none; display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; font-weight: 700; text-decoration: none; border-radius: 10px; font-size: 0.9rem;">
+                                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                                            Join Google Meet
+                                                        </a>
+                                                        <div style="margin-top: 10px; font-size: 0.78rem; color: #64748b; line-height: 1.45; max-width: 36rem;">
+                                                            If Google Meet shows <strong style="color:#475569;">Ask to join</strong>, wait on that screen—your teacher (the meeting host) can admit you from their Meet window.
+                                                        </div>
+                                                    @elseif ($hasMeetSchedule)
+                                                        @if (now()->lt($classroomMeeting->scheduled_start))
+                                                            <span style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; font-weight: 700; border-radius: 10px; font-size: 0.9rem; background: #e2e8f0; color: #475569; cursor: not-allowed; user-select: none;">
+                                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                                                Join opens when the meeting starts
+                                                            </span>
+                                                            <div style="margin-top: 8px; font-size: 0.8rem; color: #64748b;">The Meet link is not available yet.</div>
+                                                        @elseif ($classroomMeeting->hasScheduledMeetEnded())
+                                                            <span style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; font-weight: 700; border-radius: 10px; font-size: 0.9rem; background: #e2e8f0; color: #64748b; cursor: not-allowed; user-select: none;">
+                                                                Meeting ended
+                                                            </span>
+                                                            <div style="margin-top: 8px; font-size: 0.8rem; color: #64748b;">The join link is no longer available.</div>
+                                                        @elseif ($lateEntryClosed)
+                                                            <span style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; font-weight: 700; border-radius: 10px; font-size: 0.9rem; background: #e2e8f0; color: #92400e; cursor: not-allowed; user-select: none;">
+                                                                Late entry closed
+                                                            </span>
+                                                            <div style="margin-top: 8px; font-size: 0.8rem; color: #64748b;">Your teacher only allowed joining within {{ (int) $classroomMeeting->late_entry_minutes }} minutes after the class started. Ask your teacher if you still need access.</div>
+                                                        @else
+                                                            <span style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; font-weight: 700; border-radius: 10px; font-size: 0.9rem; background: #e2e8f0; color: #64748b;">Join unavailable</span>
+                                                        @endif
+                                                    @else
+                                                        <span style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; font-weight: 700; border-radius: 10px; font-size: 0.9rem; background: #e2e8f0; color: #64748b; cursor: not-allowed; user-select: none;">
+                                                            Join unavailable
+                                                        </span>
+                                                        <div style="margin-top: 8px; font-size: 0.8rem; color: #64748b;">Set both start and end times on this meeting to enable student access during that window.</div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="mdl-info mdl-info--item" style="background:#f8fafc;">
+                                        <div class="mdl-info-icon" aria-hidden="true">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 18v3"/></svg>
+                                        </div>
+                                        <div>
+                                            <div class="mdl-info-title">Classroom meeting</div>
+                                            <div class="mdl-info-text">Your teacher will post a Google Meet link for this class.</div>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -358,19 +470,38 @@
     .mdl-bread-sep { color: #cbd5e1; }
 
     .mdl-course-head {
-        background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
-        border: 1px solid #e5e7eb;
-        border-radius: 14px;
-        padding: 14px 16px;
+        background: #ffffff;
+        border: 1px solid color-mix(in srgb, var(--admin-primary, #334155) 12%, #e5e7eb);
+        border-radius: 18px;
+        padding: 20px 22px;
         display: flex;
         align-items: flex-start;
         justify-content: space-between;
         gap: 12px;
-        margin-bottom: 14px;
+        margin-bottom: 18px;
+        box-shadow: 0 6px 18px rgba(15,23,42,0.06);
+    }
+    .mdl-course-head-badges {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 4px;
     }
     .mdl-course-kicker { font-size: 0.78rem; font-weight: 700; color: #1d4ed8; text-transform: uppercase; letter-spacing: 0.04em; }
-    .mdl-course-title { margin: 3px 0 0; font-size: 1.15rem; font-weight: 800; color: var(--ink); }
+    .mdl-course-chip {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #475569;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 999px;
+        padding: 2px 8px;
+    }
+    .mdl-course-title { margin: 6px 0 0; font-size: 1.6rem; font-weight: 800; color: var(--ink); letter-spacing: -0.01em; }
     .mdl-course-subtitle { margin-top: 4px; color: var(--muted); font-size: 0.9rem; }
+    .mdl-course-teacher { margin-top: 8px; font-size: 0.88rem; color: var(--muted); line-height: 1.4; display:flex; align-items:center; gap:6px; }
+    .mdl-course-teacher-names { font-weight: 700; color: var(--ink); }
     .mdl-pill {
         display: inline-flex; align-items: center; justify-content: center;
         border-radius: 999px;
@@ -383,21 +514,36 @@
         white-space: nowrap;
     }
 
-    .mdl-layout { display: grid; grid-template-columns: 280px 1fr; gap: 14px; align-items: start; }
+    .mdl-layout { display: grid; grid-template-columns: 300px 1fr; gap: 18px; align-items: start; }
     @media (max-width: 980px) { .mdl-layout { grid-template-columns: 1fr; } }
 
     .mdl-side { display: flex; flex-direction: column; gap: 12px; }
     .mdl-block {
         background: #fff;
         border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 12px;
+        border-radius: 16px;
+        padding: 14px;
+        box-shadow: 0 4px 14px rgba(15,23,42,0.05);
     }
     .mdl-block-title { font-weight: 800; color: var(--ink); font-size: 0.95rem; margin-bottom: 10px; }
     .mdl-nav { display: flex; flex-direction: column; gap: 6px; }
+    .mdl-nav-group-label {
+        margin: 2px 0 2px;
+        font-size: 0.66rem;
+        font-weight: 800;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: #94a3b8;
+        padding: 0 2px;
+    }
+    .mdl-nav-empty {
+        font-size: 0.82rem;
+        color: #94a3b8;
+        padding: 4px 8px;
+    }
     .mdl-nav-item {
         display: flex; align-items: center;
-        padding: 8px 10px;
+        padding: 10px 11px;
         border-radius: 10px;
         border: 1px solid transparent;
         color: #0f172a;
@@ -405,7 +551,7 @@
         font-size: 0.9rem;
     }
     .mdl-nav-item:hover { background: #f8fafc; border-color: #e2e8f0; }
-    .mdl-nav-item.active { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; font-weight: 700; }
+    .mdl-nav-item.active { background: color-mix(in srgb, var(--admin-primary, #334155) 12%, #ffffff); border-color: color-mix(in srgb, var(--admin-primary, #334155) 36%, #bfdbfe); color: var(--admin-primary, #334155); font-weight: 700; }
     .mdl-side-meta { display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; }
     .mdl-side-label { color: var(--muted); font-weight: 600; }
     .mdl-side-value { color: var(--ink); font-weight: 700; }
@@ -414,8 +560,9 @@
     .mdl-section {
         background: #fff;
         border: 1px solid var(--border);
-        border-radius: 14px;
+        border-radius: 16px;
         overflow: hidden;
+        box-shadow: 0 5px 16px rgba(15,23,42,0.05);
     }
     .mdl-section-head {
         width: 100%;
@@ -423,27 +570,51 @@
         align-items: center;
         justify-content: space-between;
         gap: 10px;
-        padding: 12px 14px;
-        background: linear-gradient(180deg, #ffffff 0%, #fafbff 100%);
+        padding: 14px 16px;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
         border: none;
         cursor: pointer;
         font-weight: 800;
+        font-size: 0.98rem;
         color: #0f172a;
     }
     .mdl-section-head:hover { background: #f8fafc; }
     .mdl-chevron { color: #64748b; transition: transform .15s ease; }
     .mdl-section.open .mdl-chevron { transform: rotate(180deg); }
-    .mdl-section-body { padding: 12px 14px 14px; border-top: 1px solid #eef2f7; display: none; }
+    .mdl-section-body { padding: 14px 16px 16px; border-top: 1px solid #eef2f7; display: none; }
     .mdl-section.open .mdl-section-body { display: block; }
 
     .mdl-info {
         border: 1px solid #e2e8f0;
-        background: #f8fafc;
-        border-radius: 12px;
-        padding: 12px;
+        background: #fbfdff;
+        border-radius: 14px;
+        padding: 14px;
+        transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
     }
-    .mdl-info-title { font-weight: 800; color: #0f172a; margin-bottom: 4px; }
-    .mdl-info-text { color: #475569; font-size: 0.92rem; }
+    .mdl-info:hover {
+        border-color: color-mix(in srgb, var(--admin-primary, #334155) 28%, #dbe3ee);
+        box-shadow: 0 10px 20px rgba(15,23,42,0.07);
+        transform: translateY(-1px);
+    }
+    .mdl-info--item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .mdl-info-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        border: 1px solid #dbe3ee;
+        background: #ffffff;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .mdl-info-title { font-weight: 800; color: #0f172a; margin-bottom: 5px; font-size: 0.95rem; }
+    .mdl-info-text { color: #475569; font-size: 0.94rem; line-height: 1.55; }
 
     .mdl-resources { display: flex; flex-direction: column; gap: 10px; }
     .mdl-resource {
@@ -455,6 +626,12 @@
         border-radius: 12px;
         border: 1px solid var(--border);
         background: #fff;
+        transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+    }
+    .mdl-resource:hover {
+        border-color: color-mix(in srgb, var(--admin-primary, #334155) 28%, #dbe3ee);
+        box-shadow: 0 8px 20px rgba(15,23,42,0.08);
+        transform: translateY(-1px);
     }
     .mdl-resource-icon {
         width: 40px; height: 40px;

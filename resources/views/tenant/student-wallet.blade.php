@@ -3,26 +3,12 @@
 @section('title', 'Student Wallet - School Portal')
 
 @section('content')
-<div class="app-shell">
-    @include('tenant.partials.sidebar', ['active' => 'student-wallet'])
+@include('tenant.partials.tenant-mock-ui')
+<div class="app-shell tenant-ui-mock">
+    @include('tenant.partials.sidebar', ['active' => 'student-wallet', 'sidebarClass' => 'sidebar--edu-mock'])
 
     <div class="main-content">
-        <header class="topbar">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <button class="hamburger" aria-label="Toggle menu">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-                    </svg>
-                </button>
-                <span class="topbar-title">Student Wallet</span>
-            </div>
-            <div class="topbar-right">
-                <div class="topbar-user">
-                    <div class="avatar">{{ strtoupper(substr(auth()->user()->full_name ?? 'U', 0, 1)) }}</div>
-                    <span>{{ auth()->user()->full_name ?? 'User' }}</span>
-                </div>
-            </div>
-        </header>
+        @include('tenant.partials.mock-topbar')
 
         <main class="page-body">
 
@@ -57,11 +43,20 @@
                 </div>
 
                 {{-- Search --}}
-                <div class="finance-search-bar" style="max-width:380px;">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                    </svg>
-                    <input type="text" id="search-input" placeholder="Search Student..." oninput="filterTable()">
+                <div class="wallet-search-row">
+                    <div class="finance-search-bar" style="max-width:380px;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <input type="search" id="search-input" placeholder="Search Student..." autocomplete="off">
+                    </div>
+                    <button type="button" class="btn secondary sm wallet-search-btn" id="wallet-search-btn" aria-label="Search students">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        Search
+                    </button>
                 </div>
 
                 {{-- Table --}}
@@ -159,6 +154,24 @@
 @push('scripts')
 @include('tenant.partials.finance-styles')
 <style>
+    .wallet-search-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: stretch;
+        gap: 10px;
+    }
+    .wallet-search-row .finance-search-bar { flex: 1 1 220px; min-height: 44px; }
+    .wallet-search-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: auto;
+        min-height: 44px;
+        padding: 9px 14px;
+        white-space: nowrap;
+    }
+    .wallet-search-btn svg { flex-shrink: 0; }
+
     .btn-wallet-add {
         display: inline-flex;
         align-items: center;
@@ -177,7 +190,7 @@
 </style>
 <script>
     function filterTable() {
-        const search = document.getElementById('search-input').value.toLowerCase();
+        const search = (document.getElementById('search-input').value || '').toLowerCase();
         document.querySelectorAll('#wallets-table .finance-row').forEach(row => {
             row.style.display = row.textContent.toLowerCase().includes(search) ? '' : 'none';
         });
@@ -201,6 +214,30 @@
         });
         rows.forEach(r => tbody.appendChild(r));
     }
+
+    (function () {
+        const input = document.getElementById('search-input');
+        const btn = document.getElementById('wallet-search-btn');
+        if (!input) return;
+        let timer = null;
+        const run = () => filterTable();
+        input.addEventListener('input', () => {
+            if (timer) window.clearTimeout(timer);
+            timer = window.setTimeout(run, 250);
+        });
+        input.addEventListener('search', run);
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (timer) window.clearTimeout(timer);
+                run();
+            }
+        });
+        if (btn) btn.addEventListener('click', () => {
+            if (timer) window.clearTimeout(timer);
+            run();
+        });
+    })();
 
     function openAddWalletModal(studentId, studentName) {
         document.getElementById('add-wallet-form').action = '/tenant/student-wallet/' + studentId + '/add';
@@ -229,3 +266,5 @@
     });
 </script>
 @endpush
+
+

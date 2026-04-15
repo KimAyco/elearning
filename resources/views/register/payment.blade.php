@@ -79,8 +79,9 @@
                 @csrf
                 <input type="hidden" name="payment_method" value="gcash">
                 <input type="hidden" name="mock_confirm" value="1">
-                <button type="submit" class="btn success" style="width:100%; display:flex; align-items:center; justify-content:center; gap:10px;">
-                    <span style="font-size:1.25rem;">💙</span> Pay with GCash
+                <button type="submit" class="btn gcash" style="width:100%; display:flex; align-items:center; justify-content:center; gap:10px;">
+                    <img src="{{ asset('images/payments/gcash.webp') }}" alt="" width="24" height="24" loading="lazy" decoding="async" style="height:22px;width:auto;max-height:22px;object-fit:contain;flex-shrink:0;display:block;" aria-hidden="true">
+                    <span>Pay with GCash</span>
                 </button>
             </form>
             <form method="POST" action="{{ route('register.school.payment.confirm', ['registration' => $registration->id, 'token' => request('token')]) }}" style="margin:0;">
@@ -88,7 +89,8 @@
                 <input type="hidden" name="payment_method" value="paymaya">
                 <input type="hidden" name="mock_confirm" value="1">
                 <button type="submit" class="btn success" style="width:100%; display:flex; align-items:center; justify-content:center; gap:10px; background:#00a651; border-color:#00a651;">
-                    <span style="font-size:1.25rem;">💚</span> Pay with Maya
+                    <img src="{{ asset('images/payments/maya.svg') }}" alt="" loading="lazy" decoding="async" style="height:18px;width:auto;max-width:72px;object-fit:contain;flex-shrink:0;display:block;filter:brightness(0) invert(1);" aria-hidden="true">
+                    <span>Pay with Maya</span>
                 </button>
             </form>
         </div>
